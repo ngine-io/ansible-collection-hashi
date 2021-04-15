@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+client {
+  enabled = true
+{% if nomad__client_network_interface is not none %}
+  network_interface = "{{ nomad__client_network_interface }}"
+{% endif %}
+{% if not nomad__use_consul %}
+  servers = {{ nomad__servers | to_json }}
+{% endif %}
+}

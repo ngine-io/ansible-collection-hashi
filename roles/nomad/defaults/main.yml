@@ -1,0 +1,28 @@
+---
+nomad__node_name: "{{ inventory_hostname_short }}"
+nomad__log_level: INFO
+nomad__data_path: /opt/nomad/data
+nomad__roles:
+  - client
+  - server
+
+nomad__bind_address: "0.0.0.0"
+nomad__advertise_address: "{{ ansible_default_ipv4.address }}"
+nomad__client_network_interface: null
+nomad__datacenter: "dc1"
+nomad__region: "global"
+
+nomad__port_http: 4646
+nomad__port_rpc: 4647
+nomad__port_serf: 4648
+
+# Ansible Inventory Nomad Group Name of Servers
+nomad__server_group_name: nomad_servers
+nomad__servers: "\
+  {% set _nomad_servers = [] %}\
+  {% for host in groups[nomad__server_group_name] %}\
+      {% if _nomad_servers.append(hostvars[host]['ansible_default_ipv4']['address']) %}{% endif %}\
+  {% endfor %}\
+  {{ _nomad_servers }}"
+
+nomad__use_consul: false

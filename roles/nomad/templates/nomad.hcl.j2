@@ -1,0 +1,28 @@
+# {{ ansible_managed }}
+name = "{{ nomad__node_name }}"
+region = "{{ nomad__region }}"
+datacenter = "{{ nomad__datacenter }}"
+
+bind_addr = "{{ nomad__bind_address }}"
+data_dir = "{{ nomad__data_path }}"
+log_level = "{{ nomad__log_level }}"
+
+ports {
+  http = {{ nomad__port_http }}
+  rpc = {{ nomad__port_rpc }}
+  serf = {{ nomad__port_serf }}
+}
+
+advertise {
+  http = "{{ nomad__advertise_address }}"
+  rpc  = "{{ nomad__advertise_address }}"
+  serf = "{{ nomad__advertise_address }}"
+}
+
+telemetry {
+  collection_interval = "1s"
+  disable_hostname = true
+  prometheus_metrics = true
+  publish_allocation_metrics = true
+  publish_node_metrics = true
+}

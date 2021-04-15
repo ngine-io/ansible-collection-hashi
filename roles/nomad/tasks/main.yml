@@ -1,0 +1,65 @@
+---
+- name: Install
+  package:
+    name: nomad
+  notify:
+    - restart nomad
+
+- name: Configure unit file for systemd
+  template:
+    src: nomad_systemd.service.j2
+    dest: /etc/systemd/system/nomad.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart nomad
+
+- name: Configure base config
+  template:
+    src: nomad.hcl.j2
+    dest: "{{ nomad__config_path }}/nomad.hcl"
+  notify:
+    - restart nomad
+
+- name: Configure server
+  template:
+    src: server.hcl.j2
+    dest: "{{ nomad__config_path }}/server.hcl"
+  when: "'server' in nomad__roles"
+  notify:
+    - restart nomad
+
+- name: Remove server config
+  file:
+    path: "{{ nomad__config_path }}/server.hcl"
+    state: absent
+  when: "'server' not in nomad__roles"
+  notify:
+    - restart nomad
+
+- name: Configure client
+  template:
+    src: client.hcl.j2
+    dest: "{{ nomad__config_path }}/client.hcl"
+  when: "'client' in nomad__roles"
+  notify:
+    - restart nomad
+
+- name: Remove client config
+  file:
+    path: "{{ nomad__config_path }}/server.hcl"
+    state: absent
+  when: "'client' not in nomad__roles"
+  notify:
+    - restart nomad
+
+- name: Ensure service is running
+  systemd:
+    name: nomad
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Run handlers
+  meta: flush_handlers

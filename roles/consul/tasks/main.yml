@@ -1,0 +1,25 @@
+---
+- name: Install
+  package:
+    name: consul
+  notify:
+    - restart consul
+
+- name: Configure
+  template:
+    src: consul.hcl.j2
+    dest: "{{ consul__config_path }}/consul.hcl"
+  notify: restart consul
+
+- name: Validate consul config
+  command: consul validate "{{ consul__config_path }}/"
+  changed_when: false
+
+- name: Ensure service is running
+  systemd:
+    name: consul
+    state: started
+    enabled: true
+
+- name: Run handlers
+  meta: flush_handlers
