@@ -4,29 +4,17 @@ name: hashi
 version: 1.0.0
 readme: README.md
 authors:
-- René Moser <mail@renemoser.net>
-
+  - René Moser <mail@renemoser.net>
 description: Hashicorp Stack Collection
 license:
-  - MIT
-
+  - GPL-3.0-or-later
 tags:
   - hashicorp
   - nomad
   - consul
-
 dependencies: {}
-
-# The URL of the originating SCM repository
 repository: https://github.com/ngine-io/ansible-collection-hashi
-
-# The URL to any online docs
 documentation: https://ngine-io.github.io/ansible-collection-hashi/
-
-# The URL to the homepage of the collection/project
 homepage: https://ngine-io.github.io/ansible-collection-hashi/
-
-# The URL to the collection issue tracker
 issues: https://github.com/ngine-io/ansible-collection-hashi/issues
-
 build_ignore: []
