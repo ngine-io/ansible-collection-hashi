@@ -1,0 +1,44 @@
+---
+- name: Setup job
+  template:
+    src: "./nomad_jobs/{{ item.path }}.j2"
+    dest: /tmp/{{ item.path }}
+  register: job
+  check_mode: false
+  changed_when: false
+
+- name: Validate Job
+  command: >
+    nomad job validate /tmp/{{ item.path }}
+  register: plan
+  check_mode: false
+  changed_when: false
+
+- name: Plan Job
+  command: >
+    nomad job plan /tmp/{{ item.path }}
+  register: plan
+  changed_when: plan.rc|int == 1
+  failed_when: plan.rc|int > 1
+  check_mode: false
+
+- name: Show plan
+  debug:
+    var: plan.stdout_lines
+  changed_when: plan.rc|int == 1
+
+- name: Run Job
+  command: >
+    nomad job run /tmp/{{ item.path }}
+  register: run
+  when: plan is changed
+
+- name: Wait for Job running
+  command: >
+    nomad job status -short {{ item.name }}
+  when: run is changed
+  changed_when: false
+  register: result
+  until: result.stdout.find("= running") != -1
+  retries: 20
+  delay: 3

@@ -82,4 +82,15 @@ nomad__roles:
       tags: consul
     - role: ngine_io.hashi.nomad
       tags: nomad
+
+- hosts: nomad_servers[0]
+  vars:
+    nomad_job__job_templates:
+      - name: http-echo
+        path: http-echo.nomad
+      - name: traefik
+        path: traefik.nomad
+  roles:
+    - role: ngine_io.hashi.nomad_job
+      tags: nomad_job
 ```

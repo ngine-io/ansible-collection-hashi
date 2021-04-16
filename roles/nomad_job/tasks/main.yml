@@ -1,0 +1,4 @@
+---
+- name: Handle Nomad job
+  include_tasks: job.yml
+  with_items: "{{ nomad_job__job_templates }}"
