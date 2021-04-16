@@ -3,6 +3,6 @@
   yum_repository:
     name: hashicorp
     description: Hashicorp Repo
-    baseurl: https://rpm.releases.hashicorp.com/RHEL/$releasever/$basearch/stable
+    baseurl: "{{ hashi_common__rpm_repo }}"
     gpgcheck: true
     gpgkey: https://rpm.releases.hashicorp.com/gpg

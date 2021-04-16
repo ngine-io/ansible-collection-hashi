@@ -1,0 +1,4 @@
+---
+hashi_common__apt_repo: https://apt.releases.hashicorp.com
+hashi_common__rpm_repo: https://rpm.releases.hashicorp.com/RHEL/$releasever/$basearch/stable
+hashi_common__datacenter: "dc1"

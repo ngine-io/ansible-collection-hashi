@@ -19,6 +19,8 @@ nomad__port_serf: 4648
 
 # Ansible Inventory Nomad Group Name of Servers
 nomad__server_group_name: nomad_servers
+
+# TODO: topic of optimisation
 nomad__servers: "\
   {% set _nomad_servers = [] %}\
   {% for host in groups[nomad__server_group_name] %}\

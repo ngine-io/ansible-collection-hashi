@@ -12,6 +12,7 @@ consul__client_addresses:
 
 consul__group_name: consul
 
+# TODO: topic of optimisation
 consul__servers: "\
   {% set _consul__servers = [] %}\
   {% for host in groups[consul__group_name] %}\
