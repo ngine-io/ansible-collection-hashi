@@ -7,4 +7,13 @@ client {
 {% if not nomad__use_consul %}
   servers = {{ nomad__servers | to_json }}
 {% endif %}
+{% if nomad__node_class %}
+  node_class = "{{ nomad__node_class }}"
+{% endif %}
+  reserved {
+    cpu = 500
+    memory = 512
+    disk = 1024
+    reserved_ports = "22,8500-8600"
+  }
 }

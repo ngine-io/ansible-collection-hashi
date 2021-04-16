@@ -15,6 +15,15 @@
   notify:
     - restart nomad
 
+- name: Configure sysctl for bridge networking
+  sysctl:
+    name: "{{ item }}"
+    value: '1'
+  with_items:
+    - net.bridge.bridge-nf-call-arptables
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.bridge.bridge-nf-call-iptables
+
 - name: Configure base config
   template:
     src: nomad.hcl.j2
@@ -48,7 +57,7 @@
 
 - name: Remove client config
   file:
-    path: "{{ nomad__config_path }}/server.hcl"
+    path: "{{ nomad__config_path }}/client.hcl"
     state: absent
   when: "'client' not in nomad__roles"
   notify:

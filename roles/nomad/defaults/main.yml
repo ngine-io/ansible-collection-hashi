@@ -9,6 +9,7 @@ nomad__roles:
 nomad__bind_address: "0.0.0.0"
 nomad__advertise_address: "{{ ansible_default_ipv4.address }}"
 nomad__client_network_interface: null
+nomad__node_class: ""
 nomad__datacenter: "dc1"
 nomad__region: "global"
 
