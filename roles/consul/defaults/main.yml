@@ -1,5 +1,5 @@
 ---
-consul__datacenter: dc1
+consul__datacenter: "{{ hashi_common__datacenter }}"
 consul__domain: consul
 consul__role: server
 
