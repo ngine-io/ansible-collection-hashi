@@ -17,3 +17,15 @@ client {
     reserved_ports = "22,8500-8600"
   }
 }
+{% block nomad_client_plugins %}
+{% block nomad_client_plugin_docker %}
+plugin "docker" {
+  config {
+    auth {
+      config = "/root/.docker/config.json"
+    }
+    auth_soft_fail = true
+  }
+}
+{% endblock %}}
+{% endblock %}
