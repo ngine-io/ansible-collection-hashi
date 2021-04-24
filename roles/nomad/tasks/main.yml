@@ -1,7 +1,9 @@
 ---
 - name: Install
   package:
-    name: nomad
+    name:
+      - nomad
+      - git
   notify:
     - restart nomad
 
