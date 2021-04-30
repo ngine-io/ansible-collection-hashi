@@ -29,3 +29,7 @@ nomad__servers: "\
   {{ _nomad_servers }}"
 
 nomad__use_consul: false
+
+nomad__client_host_volumes: []
+#  - name: mysql
+#    path: /data/mysql
