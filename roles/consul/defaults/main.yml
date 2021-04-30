@@ -10,7 +10,13 @@ consul__advertise_address: "{{ ansible_default_ipv4.address }}"
 consul__client_addresses:
   - "0.0.0.0"
 
+consul__recursors: []
+# - "1.1.1.1"
+# - "1.0.0.1"
+
+consul__ui: true
 consul__group_name: consul
+consul__data_dir: /opt/consul
 
 # TODO: topic of optimisation
 consul__servers: "\
