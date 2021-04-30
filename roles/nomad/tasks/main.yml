@@ -31,7 +31,7 @@
     src: nomad.hcl.j2
     dest: "{{ nomad__config_path }}/nomad.hcl"
   notify:
-    - restart nomad
+    - reload nomad
 
 - name: Configure server
   template:
@@ -39,7 +39,7 @@
     dest: "{{ nomad__config_path }}/server.hcl"
   when: "'server' in nomad__roles"
   notify:
-    - restart nomad
+    - reload nomad
 
 - name: Remove server config
   file:
@@ -47,7 +47,7 @@
     state: absent
   when: "'server' not in nomad__roles"
   notify:
-    - restart nomad
+    - reload nomad
 
 - name: Configure client
   template:
@@ -55,7 +55,7 @@
     dest: "{{ nomad__config_path }}/client.hcl"
   when: "'client' in nomad__roles"
   notify:
-    - restart nomad
+    - reload nomad
 
 - name: Remove client config
   file:
@@ -63,7 +63,7 @@
     state: absent
   when: "'client' not in nomad__roles"
   notify:
-    - restart nomad
+    - reload nomad
 
 - name: Ensure service is running
   systemd:
@@ -74,3 +74,8 @@
 
 - name: Run handlers
   meta: flush_handlers
+
+- name: Wait for http port
+  wait_for:
+    port: "{{ nomad__port_http }}"
+  when: not ansible_check_mode

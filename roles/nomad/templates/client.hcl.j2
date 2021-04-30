@@ -19,14 +19,22 @@ client {
 }
 
 {% block nomad__client_plugins %}
+
 {% block nomad__client_plugin_docker %}
 plugin "docker" {
   config {
     auth {
       config = "/root/.docker/config.json"
     }
-    auth_soft_fail = true
   }
 }
-{% endblock %}}
+{% endblock %}
+
+{% block nomad__client_plugin_raw_exec %}
+plugin "raw_exec" {
+  config {
+    enabled = true
+  }
+}
+{% endblock %}
 {% endblock %}

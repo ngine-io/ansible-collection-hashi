@@ -1,4 +1,9 @@
 ---
+- name: reload nomad
+  systemd:
+    name: nomad
+    state: reloaded
+
 - name: restart nomad
   systemd:
     name: nomad

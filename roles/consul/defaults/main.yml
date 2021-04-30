@@ -17,6 +17,7 @@ consul__recursors: []
 consul__ui: true
 consul__group_name: consul
 consul__data_dir: /opt/consul
+consul__encrypt: ""
 
 # TODO: topic of optimisation
 consul__servers: "\

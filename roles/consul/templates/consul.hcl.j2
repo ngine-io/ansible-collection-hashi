@@ -4,16 +4,16 @@
 datacenter = "{{ consul__datacenter }}"
 data_dir = "{{ consul__data_dir }}"
 client_addr = "{{ ' '.join(consul__client_addresses) }}"
-ui = {{'true' if consul__ui else 'false' }}
-server = {{'true' if consul__role == 'server' else 'false' }}
+ui = {{ consul__ui | bool | to_json }}
+server = {{ (consul__role == 'server') | bool | to_json }}
 
-{%- if consul__role == 'server' %}
+{% if consul__role == 'server' %}
 bootstrap_expect = {{ consul__servers | count }}
-{% endif -%}
+{% endif %}
 
-{%- if consul__encrypt %}
+{% if consul__encrypt %}
 encrypt = "{{ consul__encrypt }}"
-{% endif -%}
+{% endif %}
 
 retry_join = {{ consul__servers | to_json }}
 log_level = "{{ consul__log_level }}"
@@ -21,6 +21,6 @@ node_name = "{{ consul__node_name }}"
 bind_addr = "{{ consul__bind_address }}"
 advertise_addr = "{{ consul__advertise_address }}"
 
-{%- if consul__recursors %}
+{% if consul__recursors %}
 recursors = {{ consul__recursors | to_json }}
-{% endif -%}
+{% endif %}
