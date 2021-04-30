@@ -17,8 +17,9 @@ client {
     reserved_ports = "22,8500-8600"
   }
 }
-{% block nomad_client_plugins %}
-{% block nomad_client_plugin_docker %}
+
+{% block nomad__client_plugins %}
+{% block nomad__client_plugin_docker %}
 plugin "docker" {
   config {
     auth {
