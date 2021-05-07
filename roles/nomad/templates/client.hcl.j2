@@ -30,7 +30,7 @@ client {
 {% block nomad__client_plugin_docker %}
 plugin "docker" {
   config {
-    allow_privileged = true
+    allow_privileged = {{ nomad__client_plugin_docker_allow_privileged | to_json }}
     auth {
       config = "/root/.docker/config.json"
     }
@@ -41,7 +41,7 @@ plugin "docker" {
 {% block nomad__client_plugin_raw_exec %}
 plugin "raw_exec" {
   config {
-    enabled = true
+    enabled = {{ nomad__client_plugin_raw_exec_enabled | to_json }}
   }
 }
 {% endblock %}

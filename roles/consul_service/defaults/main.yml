@@ -1,0 +1,5 @@
+---
+consul_service__services: []
+#- service_name: zookeeper
+#  service_port: 7000
+#  service_address: "{{ ansible_default_ipv4.address }}"
