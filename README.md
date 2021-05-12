@@ -74,6 +74,9 @@ nomad__roles:
       tags: nomad
 
 - hosts: nomad_clients
+  serial:
+    - 1
+    - 30%
   roles:
     # Install docker for docker workloads
     # - role: geerlingguy.docker
