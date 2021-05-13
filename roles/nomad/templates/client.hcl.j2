@@ -11,10 +11,10 @@ client {
   node_class = "{{ nomad__node_class }}"
 {% endif %}
   reserved {
-    cpu = 500
-    memory = 512
-    disk = 1024
-    reserved_ports = "22,8500-8600"
+    cpu = {{ nomad__client_reserved_cpu }}
+    memory = {{ nomad__client_reserved_memory }}
+    disk = {{ nomad__client_reserved_disk }}
+    reserved_ports = "{{ nomad__client_reserved_ports | join(',') }}"
   }
 
   {% for host_volume in nomad__client_host_volumes %}

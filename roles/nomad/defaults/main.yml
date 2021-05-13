@@ -32,6 +32,14 @@ nomad__use_consul: false
 
 nomad__client_network_interface: null
 
+# Reserved resources
+nomad__client_reserved_cpu: 500
+nomad__client_reserved_memory: 512
+nomad__client_reserved_disk: 1024
+nomad__client_reserved_ports:
+  - "22"
+  - "8500-8600"
+
 # Host volumes
 nomad__client_host_volume_basepath: "/mnt"
 nomad__client_host_volumes: []
