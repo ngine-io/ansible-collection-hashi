@@ -8,8 +8,8 @@ nomad__roles:
 
 nomad__bind_address: "0.0.0.0"
 nomad__advertise_address: "{{ ansible_default_ipv4.address }}"
-nomad__client_network_interface: null
 nomad__node_class: ""
+
 nomad__datacenter: "{{ hashi_common__datacenter }}"
 nomad__region: "global"
 
@@ -30,7 +30,10 @@ nomad__servers: "\
 
 nomad__use_consul: false
 
-nomad_client_host_volume_basepath: "/data"
+nomad__client_network_interface: null
+
+# Host volumes
+nomad__client_host_volume_basepath: "/mnt"
 nomad__client_host_volumes: []
 #  - name: mysql
 #    path: /mysql

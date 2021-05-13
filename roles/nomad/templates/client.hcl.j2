@@ -19,7 +19,7 @@ client {
 
   {% for host_volume in nomad__client_host_volumes %}
   host_volume "{{ host_volume.name }}" {
-    path = "{{ host_volume.path }}"
+    path = "{{ nomad__client_host_volume_basepath + host_volume.path }}"
     read_only = {{ (host_volume.read_only | default(false)) | bool | to_json }}
   }
   {% endfor %}
