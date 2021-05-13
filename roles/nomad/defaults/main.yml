@@ -8,6 +8,7 @@ nomad__roles:
 
 nomad__bind_address: "0.0.0.0"
 nomad__advertise_address: "{{ ansible_default_ipv4.address }}"
+
 nomad__node_class: ""
 
 nomad__datacenter: "{{ hashi_common__datacenter }}"
@@ -46,5 +47,11 @@ nomad__client_host_volumes: []
 #  - name: mysql
 #    path: /mysql
 
+# Host networks
+nomad__client_host_networks: []
+  # - name: public
+  #   cidr: "203.0.113.0/24"
+
+# Plugins configs
 nomad__client_plugin_docker_allow_privileged: false
 nomad__client_plugin_raw_exec_enabled: false

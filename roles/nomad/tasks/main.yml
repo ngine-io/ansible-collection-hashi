@@ -51,6 +51,7 @@
 
 - name: Create host volumes
   file:
+    path: "{{ nomad__client_host_volume_basepath + item }}"
     state: directory
   with_items: "{{ nomad__client_host_volumes }}"
 

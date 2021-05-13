@@ -17,6 +17,12 @@ client {
     reserved_ports = "{{ nomad__client_reserved_ports | join(',') }}"
   }
 
+  {% for host_network in nomad__client_host_networks %}
+  host_network "{{ host_network.name }}" {
+    cidr = "{{ (host_volume.cidr }}"
+  }
+  {% endfor %}
+
   {% for host_volume in nomad__client_host_volumes %}
   host_volume "{{ host_volume.name }}" {
     path = "{{ nomad__client_host_volume_basepath + host_volume.path }}"
