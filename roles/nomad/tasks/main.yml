@@ -25,6 +25,7 @@
     - net.bridge.bridge-nf-call-arptables
     - net.bridge.bridge-nf-call-ip6tables
     - net.bridge.bridge-nf-call-iptables
+  when: "'client' in nomad__roles"
 
 - name: Configure base config
   template:

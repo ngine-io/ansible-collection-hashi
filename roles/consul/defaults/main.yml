@@ -25,7 +25,7 @@ consul__servers: "\
   {% for host in groups[consul__group_name] %}\
     {% set _consul_node_role = hostvars[host]['consul__role'] | default('server', true) %}\
     {% if _consul_node_role == 'server' %}\
-      {% if _consul__servers.append(hostvars[host]['ansible_default_ipv4']['address']) %}{% endif %}\
+      {% if _consul__servers.append(hostvars[host]['consul__advertise_address']) %}{% endif %}\
     {% endif %}\
   {% endfor %}\
   {{ _consul__servers }}"

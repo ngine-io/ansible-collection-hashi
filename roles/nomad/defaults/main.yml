@@ -21,11 +21,11 @@ nomad__port_serf: 4648
 # Ansible Inventory Nomad Group Name of Servers
 nomad__server_group_name: nomad_servers
 
-# TODO: topic of optimisation
+# TODO: topic of optimization
 nomad__servers: "\
   {% set _nomad_servers = [] %}\
   {% for host in groups[nomad__server_group_name] %}\
-      {% if _nomad_servers.append(hostvars[host]['ansible_default_ipv4']['address']) %}{% endif %}\
+      {% if _nomad_servers.append(hostvars[host]['nomad__advertise_address']) %}{% endif %}\
   {% endfor %}\
   {{ _nomad_servers }}"
 
@@ -34,8 +34,8 @@ nomad__use_consul: false
 nomad__client_network_interface: null
 
 # Reserved resources
-nomad__client_reserved_cpu: 500
-nomad__client_reserved_memory: 512
+nomad__client_reserved_cpu: 200
+nomad__client_reserved_memory: 256
 nomad__client_reserved_disk: 1024
 nomad__client_reserved_ports:
   - "22"

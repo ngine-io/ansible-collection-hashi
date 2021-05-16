@@ -17,18 +17,18 @@ client {
     reserved_ports = "{{ nomad__client_reserved_ports | join(',') }}"
   }
 
-  {% for host_network in nomad__client_host_networks %}
+{% for host_network in nomad__client_host_networks %}
   host_network "{{ host_network.name }}" {
-    cidr = "{{ (host_volume.cidr }}"
+    cidr = "{{ host_network.cidr }}"
   }
-  {% endfor %}
+{% endfor %}
 
-  {% for host_volume in nomad__client_host_volumes %}
+{% for host_volume in nomad__client_host_volumes %}
   host_volume "{{ host_volume.name }}" {
     path = "{{ nomad__client_host_volume_basepath + host_volume.path }}"
     read_only = {{ (host_volume.read_only | default(false)) | bool | to_json }}
   }
-  {% endfor %}
+{% endfor %}
 }
 
 {% block nomad__client_plugins %}
