@@ -10,6 +10,15 @@ client {
 {% if nomad__node_class %}
   node_class = "{{ nomad__node_class }}"
 {% endif %}
+
+{% if nomad__client_meta %}
+  meta {
+{% for key, value in nomad__client_meta %}
+    {{ key }} = {{ value | to_json }}
+{% endfor %}
+  }
+{% endif %}
+
   reserved {
     cpu = {{ nomad__client_reserved_cpu }}
     memory = {{ nomad__client_reserved_memory }}
