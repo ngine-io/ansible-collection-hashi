@@ -21,13 +21,12 @@ nomad__port_serf: 4648
 # Ansible Inventory Nomad Group Name of Servers
 nomad__server_group_name: nomad_servers
 
-# TODO: topic of optimization
-nomad__servers: "\
-  {% set _nomad_servers = [] %}\
-  {% for host in groups[nomad__server_group_name] %}\
-      {% if _nomad_servers.append(hostvars[host]['nomad__advertise_address']) %}{% endif %}\
-  {% endfor %}\
-  {{ _nomad_servers }}"
+nomad__servers: |
+  {% set _nomad_servers = [] %}
+  {% for host in groups[nomad__server_group_name] %}
+  {% if _nomad_servers.append(hostvars[host]['nomad__advertise_address'] | default(hostvars[host]['ansible_default_ipv4']['address'], true)) %}{% endif %}
+  {% endfor %}
+  {{ _nomad_servers }}
 
 nomad__use_consul: false
 
