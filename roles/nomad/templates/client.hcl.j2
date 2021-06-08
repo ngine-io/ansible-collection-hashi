@@ -49,7 +49,7 @@ plugin "docker" {
     auth {
       config = "/root/.docker/config.json"
     }
-    volume {
+    volumes {
       enabled = {{ nomad__client_plugin_docker_volume_enabled | bool | to_json }}
     }
   }
