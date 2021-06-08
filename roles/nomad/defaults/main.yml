@@ -52,6 +52,9 @@ nomad__client_host_networks: []
   # - name: public
   #   cidr: "203.0.113.0/24"
 
-# Plugins configs
+## Plugins configs
+# docker
 nomad__client_plugin_docker_allow_privileged: false
+nomad__client_plugin_docker_volume_enabled: false
+# raw_exec
 nomad__client_plugin_raw_exec_enabled: false

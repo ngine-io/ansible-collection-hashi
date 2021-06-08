@@ -45,9 +45,12 @@ client {
 {% block nomad__client_plugin_docker %}
 plugin "docker" {
   config {
-    allow_privileged = {{ nomad__client_plugin_docker_allow_privileged | to_json }}
+    allow_privileged = {{ nomad__client_plugin_docker_allow_privileged | bool | to_json }}
     auth {
       config = "/root/.docker/config.json"
+    }
+    volume {
+      enabled = {{ nomad__client_plugin_docker_volume_enabled | bool | to_json }}
     }
   }
 }
