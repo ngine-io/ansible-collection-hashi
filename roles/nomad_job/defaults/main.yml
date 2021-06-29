@@ -1,4 +1,6 @@
 ---
+nomad_job__nomad_addr: "https://127.0.0.1:4646"
+nomad_job__nomad_namespace: "default"
 nomad_job__job_templates: []
 #  - name:
 #    file:
