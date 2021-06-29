@@ -1,0 +1,5 @@
+---
+cni__version: v0.9.1
+cni__base_url: https://github.com/containernetworking/plugins/releases/download
+cni__url: "{{ cni__base_url }}/{{ cni__version }}/cni-plugins-linux-amd64-{{ cni__version }}.tgz"
+cni__checksum_sha512_url: "{{ cni__base_url }}/{{ cni__version }}/cni-plugins-linux-amd64-{{ cni__version }}.tgz.sha512"

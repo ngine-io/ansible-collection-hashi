@@ -1,0 +1,28 @@
+---
+- name: Ensure install dir exists
+  file:
+    path: "{{ item }}"
+    group: root
+    owner: root
+    state: directory
+  with_items:
+    - "{{ cni__install_path }}/bin-{{ cni__version }}"
+
+- name: Download tar.gz
+  get_url:
+    url: "{{ cni__url }}"
+    dest: "{{ cni__install_path }}"
+    checksum: "sha512:{{ cni__checksum_sha512_url }}"
+  register: _cni__download
+
+- name: Expand tar.gz
+  unarchive:
+    src: "{{ _cni__download.dest }}"
+    dest: "{{ cni__install_path }}/bin-{{ cni__version }}"
+    copy: false
+
+- name: Create link to bin
+  file:
+    src: "{{ cni__install_path }}/bin-{{ cni__version }}"
+    dest: "{{ cni__install_path }}/bin"
+    state: link
