@@ -3,3 +3,16 @@ cni__version: v0.9.1
 cni__base_url: https://github.com/containernetworking/plugins/releases/download
 cni__url: "{{ cni__base_url }}/{{ cni__version }}/cni-plugins-linux-amd64-{{ cni__version }}.tgz"
 cni__checksum_sha512_url: "{{ cni__base_url }}/{{ cni__version }}/cni-plugins-linux-amd64-{{ cni__version }}.tgz.sha512"
+cni__configs: []
+#cni__configs:
+#  - cniVersion: 0.4.0
+#    name: mynet
+#    plugins:
+#    - type: macvlan
+#      master: enp1s0f1
+#      ipam:
+#        type: dhcp
+#    - type: portmap
+#      capabilities:
+#        portMappings: true
+#      snat: true

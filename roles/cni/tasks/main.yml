@@ -7,6 +7,7 @@
     state: directory
   with_items:
     - "{{ cni__install_path }}/bin-{{ cni__version }}"
+    - "{{ cni__install_path }}/config"
 
 - name: Download tar.gz
   get_url:
@@ -26,3 +27,13 @@
     src: "{{ cni__install_path }}/bin-{{ cni__version }}"
     dest: "{{ cni__install_path }}/bin"
     state: link
+  notify: event CNI changed
+
+- name: Configure CNI plugins
+  copy:
+    content: "{{ item | to_nice_json(indent=2) }}"
+    dest: "{{ cni__install_path }}/config/{{ item.name }}"
+  with_items: "{{ cni__configs }}"
+  loop_control:
+    label: "{{ item.name }}"
+  notify: event CNI changed

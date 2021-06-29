@@ -83,6 +83,8 @@ nomad__roles:
     #   tags: docker
     - role: ngine_io.hashi.consul
       tags: consul
+    - role: ngine_io.hashi.cni
+      tags: cni
     - role: ngine_io.hashi.nomad
       tags: nomad
 
