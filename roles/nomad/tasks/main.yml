@@ -2,7 +2,7 @@
 - name: Install
   package:
     name:
-      - nomad
+      - "{{ nomad__package }}"
       - git
   notify:
     - restart nomad

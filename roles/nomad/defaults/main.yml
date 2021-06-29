@@ -1,4 +1,5 @@
 ---
+nomad__package: ""
 nomad__node_name: "{{ inventory_hostname_short }}"
 nomad__log_level: INFO
 nomad__data_path: /opt/nomad/data

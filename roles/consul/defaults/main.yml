@@ -1,4 +1,5 @@
 ---
+consul__package: "consul"
 consul__datacenter: "{{ hashi_common__datacenter }}"
 consul__domain: consul
 consul__role: server
