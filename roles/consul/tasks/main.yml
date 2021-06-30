@@ -1,7 +1,7 @@
 ---
 - name: Install
   package:
-    name: "{{ consul_package }}"
+    name: "{{ consul__package }}"
   notify:
     - restart consul
 
