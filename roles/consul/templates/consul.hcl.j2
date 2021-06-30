@@ -26,7 +26,7 @@ ports {
 }
 
 connect {
-  enabled = "{{ consul__connect_enabled | bool | to_json }}"
+  enabled = {{ consul__connect_enabled | bool | to_json }}
 }
 
 {% if consul__recursors %}
