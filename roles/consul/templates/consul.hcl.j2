@@ -21,6 +21,14 @@ node_name = "{{ consul__node_name }}"
 bind_addr = "{{ consul__bind_address }}"
 advertise_addr = "{{ consul__advertise_address }}"
 
+ports {
+  grpc = 8502
+}
+
+connect {
+  enabled = "{{ consul__connect_enabled | bool | to_json }}"
+}
+
 {% if consul__recursors %}
 recursors = {{ consul__recursors | to_json }}
 {% endif %}
