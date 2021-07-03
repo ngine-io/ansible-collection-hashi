@@ -12,6 +12,19 @@ consul__advertise_address: "{{ ansible_default_ipv4.address }}"
 consul__client_addresses:
   - "0.0.0.0"
 
+# See https://www.consul.io/docs/agent/options#ports
+consul__port_grpc: 8502
+consul__port_dns: 8600
+consul__port_http: 8500
+consul__port_https: 8501
+consul__port_serf_lan: 8301
+consul__port_serf_wan: 8302
+consul__port_server: 8300
+consul__port_sidecar_min: 21000
+consul__port_sidecar_max: 21255
+consul__port_expose_min: 21500
+consul__port_expose_max: 21755
+
 consul__recursors: []
 # - "1.1.1.1"
 # - "1.0.0.1"

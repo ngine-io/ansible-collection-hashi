@@ -22,7 +22,17 @@ bind_addr = "{{ consul__bind_address }}"
 advertise_addr = "{{ consul__advertise_address }}"
 
 ports {
-  grpc = 8502
+  grpc = {{ consul__port_grpc }}
+  dns = {{ consul__port_dns }}
+  http = {{ consul__port_http }}
+  https = {{ consul__port_https }}
+  serf_lan = {{ consul__port_serf_lan }}
+  serf_wan = {{ consul__port_serf_wan }}
+  server = {{ consul__port_server }}
+  sidecar_min_port = {{ consul__port_sidecar_min_port }}
+  sidecar_max_port = {{ consul__port_sidecar_max_port }}
+  expose_min_port = {{ consul__port_expose_min_port }}
+  expose_max_port = {{ consul__port_expose_max_port }}
 }
 
 connect {
