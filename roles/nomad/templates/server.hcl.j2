@@ -2,4 +2,7 @@
 server {
   enabled = true
   bootstrap_expect = {{ nomad__servers | count }}
+  default_scheduler_config {
+    scheduler_algorithm = "{{ nomad__server__default_scheduler_config_scheduler_algorithm }}"
+  }
 }

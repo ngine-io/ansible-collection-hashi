@@ -22,6 +22,9 @@ nomad__port_serf: 4648
 # Ansible Inventory Nomad Group Name of Servers
 nomad__server_group_name: nomad_servers
 
+# See https://www.nomadproject.io/docs/configuration/server#configuring-scheduler-config for limitations
+nomad__server__default_scheduler_config_scheduler_algorithm: "binpack"
+
 nomad__servers: |
   {% set _nomad_servers = [] %}
   {% for host in groups[nomad__server_group_name] %}
