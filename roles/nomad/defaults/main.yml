@@ -19,6 +19,8 @@ nomad__port_http: 4646
 nomad__port_rpc: 4647
 nomad__port_serf: 4648
 
+nomad__telemetry_collection_interval: 60s
+
 # Ansible Inventory Nomad Group Name of Servers
 nomad__server_group_name: nomad_servers
 

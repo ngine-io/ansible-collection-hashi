@@ -20,7 +20,7 @@ advertise {
 }
 
 telemetry {
-  collection_interval = "1s"
+  collection_interval = "{{ nomad__telemetry_collection_interval }}"
   disable_hostname = true
   prometheus_metrics = true
   publish_allocation_metrics = true
