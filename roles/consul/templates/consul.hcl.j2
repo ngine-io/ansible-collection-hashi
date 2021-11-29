@@ -29,10 +29,10 @@ ports {
   serf_lan = {{ consul__port_serf_lan }}
   serf_wan = {{ consul__port_serf_wan }}
   server = {{ consul__port_server }}
-  sidecar_min_port = {{ consul__port_sidecar_min_port }}
-  sidecar_max_port = {{ consul__port_sidecar_max_port }}
-  expose_min_port = {{ consul__port_expose_min_port }}
-  expose_max_port = {{ consul__port_expose_max_port }}
+  sidecar_min_port = {{ consul__port_sidecar_min }}
+  sidecar_max_port = {{ consul__port_sidecar_max }}
+  expose_min_port = {{ consul__port_expose_min }}
+  expose_max_port = {{ consul__port_expose_max }}
 }
 
 connect {
