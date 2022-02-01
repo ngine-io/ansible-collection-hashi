@@ -22,10 +22,16 @@ nomad__port_serf: 4648
 nomad__telemetry_collection_interval: 60s
 
 # Ansible Inventory Nomad Group Name of Servers
-nomad__server_group_name: nomad_servers
+nomad__server_scheduler_scheduler_algorithm: "binpack"
+nomad__server_scheduler_memory_oversubscription_enabled: false
+nomad__server_scheduler_reject_job_registration: false
+nomad__server_scheduler_preemp_batch_scheduler_enabled: false
+nomad__server_scheduler_preemp_system_scheduler_enabled: true
+nomad__server_scheduler_preemp_service_scheduler_enabled: false
+nomad__server_scheduler_preemp_sysbatch_scheduler_enabled: false
 
 # See https://www.nomadproject.io/docs/configuration/server#configuring-scheduler-config for limitations
-nomad__server__default_scheduler_config_scheduler_algorithm: "binpack"
+https://gitpod.io/#
 
 nomad__servers: |
   {% set _nomad_servers = [] %}
