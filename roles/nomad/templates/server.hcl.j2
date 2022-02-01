@@ -3,6 +3,15 @@ server {
   enabled = true
   bootstrap_expect = {{ nomad__servers | count }}
   default_scheduler_config {
-    scheduler_algorithm = "{{ nomad__server__default_scheduler_config_scheduler_algorithm }}"
+    scheduler_algorithm = "{{ nomad__server_scheduler_scheduler_algorithm }}"
+    memory_oversubscription_enabled = {{ nomad__server_scheduler_memory_oversubscription_enabled | bool | to_json }}
+    reject_job_registration = {{ nomad__server_scheduler_reject_job_registration | bool | to_json }}
+
+    preemption_config {
+      batch_scheduler_enabled = {{ nomad__server_scheduler_preemp_batch_scheduler_enabled | bool | to_json }}
+      system_scheduler_enabled = {{ nomad__server_scheduler_preemp_system_scheduler_enabled | bool | to_json }}
+      service_scheduler_enabled = {{ nomad__server_scheduler_preemp_service_scheduler_enabled | bool | to_json }}
+      sysbatch_scheduler_enabled = {{ nomad__server_scheduler_preemp_sysbatch_scheduler_enabled | bool | to_json }}
+    }
   }
 }
