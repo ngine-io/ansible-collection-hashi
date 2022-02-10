@@ -5,6 +5,12 @@
   notify:
     - restart consul
 
+- name: Setup consul.env
+  copy:
+    content: "{{ consul__env_content }}"
+    dest: "{{ consul__config_path }}/consul.env"
+  notify: restart consul
+
 - name: Configure
   template:
     src: consul.hcl.j2

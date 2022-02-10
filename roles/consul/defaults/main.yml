@@ -4,7 +4,6 @@ consul__datacenter: "{{ hashi_common__datacenter }}"
 consul__domain: consul
 consul__role: server
 
-
 consul__node_name: "{{ inventory_hostname_short }}"
 consul__log_level: INFO
 consul__bind_address: "0.0.0.0"
@@ -44,3 +43,5 @@ consul__servers: |
   {% endif %}
   {% endfor %}
   {{ _consul__servers }}
+
+consul__env_content: ""
