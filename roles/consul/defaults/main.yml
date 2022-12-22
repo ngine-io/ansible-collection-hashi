@@ -45,3 +45,4 @@ consul__servers: |
   {{ _consul__servers }}
 
 consul__env_content: ""
+consul__prometheus_retention_time: 600s

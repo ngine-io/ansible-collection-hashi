@@ -42,3 +42,7 @@ connect {
 {% if consul__recursors %}
 recursors = {{ consul__recursors | to_json }}
 {% endif %}
+
+telemetry {
+  prometheus_retention_time = "{{ consul__prometheus_retention_time }}"
+}
