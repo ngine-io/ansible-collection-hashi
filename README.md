@@ -66,6 +66,8 @@ nomad__roles:
 # file: ./playbooks/nomad.yml
 ---
 - hosts: nomad_servers
+
+- hosts: nomad_servers
   serial: 1
   roles:
     - role: ngine_io.hashi.consul
