@@ -1,0 +1,35 @@
+---
+- name: Update package cache for Debian
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 600
+  when: ansible_os_family == 'Debian'
+
+- name: Check all packages to their latest version
+  ansible.builtin.package:
+    name: "{{ nomad_upgrade__package_name }}"
+    state: latest
+  check_mode: true
+  register: updates_available
+
+- name: Process package updates
+  when: updates_available is changed
+  block:
+    - name: Nomad drain node
+      command: nomad node drain -self -enable
+
+    - name: Update all packages to their latest version
+      ansible.builtin.package:
+        name: "{{ nomad_upgrade__package_name }}"
+        state: latest
+
+    - name: Reboot host
+      ansible.builtin.reboot:
+        reboot_timeout: 3600
+
+    - name: Nomad eligibility enable node
+      command: nomad node eligibility -self -enable
+
+    - name: Pause for some time
+      ansible.builtin.pause:
+        minutes: 1
