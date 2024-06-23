@@ -101,3 +101,23 @@ nomad__roles:
     - role: ngine_io.hashi.nomad_job
       tags: nomad_job
 ```
+
+### Upgrading a Nomad cluster
+
+```yaml
+# file: ./playbooks/nomad_upgrade.yml
+---
+- hosts: nomad_servers
+  serial: 1
+  roles:
+    - role: ngine_io.hashi.nomad_upgrade
+      tags: nomad
+
+- hosts: nomad_clients
+  serial:
+    - 1
+    - 30%
+  roles:
+    - role: ngine_io.hashi.nomad_upgrade
+      tags: nomad
+```
