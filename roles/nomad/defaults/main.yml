@@ -53,6 +53,8 @@ nomad__client_reserved_ports:
   - "22"
   - "8500-8600"
 
+nomad__client_cpu_total_compute: null
+
 # Host volumes
 nomad__client_host_volume_basepath: "/mnt"
 nomad__client_host_volumes: []
