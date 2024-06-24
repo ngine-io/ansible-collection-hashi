@@ -1,2 +1,5 @@
 ---
 cni__install_path: /opt/cni
+cni__arch:
+  x86_64: amd64
+  aarch64: arm64
