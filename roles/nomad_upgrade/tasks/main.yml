@@ -13,39 +13,44 @@
         cache_valid_time: 600
       when: ansible_os_family == 'Debian'
 
-    - name: Check all packages to their latest version
+    # package-latest is the entire point of this role: it exists to move a
+    # host to the current packages under a controlled drain and reboot.
+    - name: Check all packages to their latest version  # noqa: package-latest
       ansible.builtin.package:
         name: "{{ nomad_upgrade__package_name }}"
         state: latest
       check_mode: true
-      register: updates_available
+      register: nomad_upgrade__updates_available
 
     - name: Ensure Nomad eligibility enabled if unchanged
       when:
-        - updates_available is not changed
+        - nomad_upgrade__updates_available is not changed
         - nomad_upgrade__is_client | bool
       ansible.builtin.command: nomad node eligibility -self -enable
-      register: eligibility_node
-      until: eligibility_node.rc == 0
+      register: nomad_upgrade__eligibility
+      until: nomad_upgrade__eligibility.rc == 0
       retries: "{{ nomad_upgrade__retries }}"
       delay: "{{ nomad_upgrade__delay }}"
       changed_when: false
 
-    - name: Process package updates
-      when: updates_available is changed
+    # Not a handler: the drain, upgrade and reboot have to run in order
+    # within this host's turn of the serial play.
+    - name: Process package updates  # noqa: no-handler
+      when: nomad_upgrade__updates_available is changed
       block:
         - name: Nomad drain node
           ansible.builtin.command: >
             nomad node drain -self -enable
             -deadline {{ nomad_upgrade__drain_deadline }}
             -ignore-system={{ nomad_upgrade__drain_ignore_system_jobs | bool | lower }}
-          register: drain_node
-          until: drain_node.rc == 0
+          register: nomad_upgrade__drain
+          changed_when: nomad_upgrade__drain.rc == 0
+          until: nomad_upgrade__drain.rc == 0
           retries: "{{ nomad_upgrade__retries }}"
           delay: "{{ nomad_upgrade__delay }}"
           when: nomad_upgrade__is_client | bool
 
-        - name: Update all packages to their latest version
+        - name: Update all packages to their latest version  # noqa: package-latest
           ansible.builtin.package:
             name: "{{ nomad_upgrade__package_name }}"
             state: latest
@@ -63,8 +68,8 @@
 
         - name: Wait for the agent to answer again
           ansible.builtin.command: nomad agent-info
-          register: agent_info
-          until: agent_info.rc == 0
+          register: nomad_upgrade__agent_info
+          until: nomad_upgrade__agent_info.rc == 0
           retries: "{{ nomad_upgrade__retries }}"
           delay: "{{ nomad_upgrade__delay }}"
           changed_when: false
@@ -75,8 +80,8 @@
             nomad operator raft list-peers | grep -c -E '\b(leader|follower)\b'
           args:
             executable: /bin/bash
-          register: raft_peers
-          until: raft_peers.rc == 0 and raft_peers.stdout | int >= (nomad__servers | default([]) | count)
+          register: nomad_upgrade__raft_peers
+          until: nomad_upgrade__raft_peers.rc == 0 and nomad_upgrade__raft_peers.stdout | int >= (nomad__servers | default([]) | count)
           retries: "{{ nomad_upgrade__retries }}"
           delay: "{{ nomad_upgrade__delay }}"
           changed_when: false
@@ -84,8 +89,8 @@
 
         - name: Nomad eligibility enable node
           ansible.builtin.command: nomad node eligibility -self -enable
-          register: eligibility_node
-          until: eligibility_node.rc == 0
+          register: nomad_upgrade__eligibility
+          until: nomad_upgrade__eligibility.rc == 0
           retries: "{{ nomad_upgrade__retries }}"
           delay: "{{ nomad_upgrade__delay }}"
           changed_when: false

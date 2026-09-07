@@ -134,7 +134,7 @@
     path: "{{ nomad__client_host_volume_basepath + item.path }}"
     mode: "0777"
     state: directory
-  with_items: "{{ nomad__client_host_volumes }}"
+  loop: "{{ nomad__client_host_volumes }}"
 
 - name: Configure client
   ansible.builtin.template:

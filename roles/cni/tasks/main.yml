@@ -6,7 +6,7 @@
     owner: root
     mode: "0755"
     state: directory
-  with_items:
+  loop:
     - "{{ cni__install_path }}/bin-{{ cni__version }}"
     - "{{ cni__install_path }}/config"
 
@@ -43,7 +43,7 @@
     owner: root
     group: root
     mode: "0644"
-  with_items: "{{ cni__configs }}"
+  loop: "{{ cni__configs }}"
   loop_control:
     label: "{{ item.name }}"
   notify: Event CNI changed

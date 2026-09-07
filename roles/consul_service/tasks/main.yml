@@ -22,7 +22,7 @@
     ttl: "{{ item.ttl | default(omit) }}"
     tcp: "{{ item.tcp | default(omit) }}"
     http: "{{ item.http | default(omit) }}"
-  with_items: "{{ consul_service__services }}"
+  loop: "{{ consul_service__services }}"
   loop_control:
     label: "{{ item.service_name | default(item.service_id | default('service')) }}"
   no_log: "{{ consul_service__token is not none }}"
