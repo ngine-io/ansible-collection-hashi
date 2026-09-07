@@ -1,5 +1,19 @@
 ---
+# Agent the registrations are sent to. Defaults to the local agent, matching
+# what the consul role configures on the same host.
+consul_service__host: 127.0.0.1
+consul_service__port: "{{ consul__port_http | default(8500) }}"
+consul_service__scheme: http
+consul_service__validate_certs: true
+# ACL token with service:write. Secret, keep it in a vault file.
+consul_service__token: null
+
+# consul_service__services:
+#   - service_name: zookeeper
+#     service_port: 7000
+#     service_address: "{{ ansible_default_ipv4.address }}"
+#     tags:
+#       - primary
+#     interval: 30s
+#     tcp: "localhost:7000"
 consul_service__services: []
-#- service_name: zookeeper
-#  service_port: 7000
-#  service_address: "{{ ansible_default_ipv4.address }}"

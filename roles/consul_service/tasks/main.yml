@@ -1,12 +1,21 @@
 ---
 - name: Register/De-register services
   community.general.consul:
+    host: "{{ consul_service__host }}"
+    port: "{{ consul_service__port }}"
+    scheme: "{{ consul_service__scheme }}"
+    validate_certs: "{{ consul_service__validate_certs }}"
+    token: "{{ consul_service__token | default(omit, true) }}"
+    service_id: "{{ item.service_id | default(omit) }}"
     service_name: "{{ item.service_name | default(omit) }}"
     service_port: "{{ item.service_port | default(omit) }}"
     service_address: "{{ item.service_address | default(omit) }}"
     state: "{{ item.state | default('present') }}"
     tags: "{{ item.tags | default(omit) }}"
+    check_id: "{{ item.check_id | default(omit) }}"
     check_name: "{{ item.check_name | default(omit) }}"
+    check_node: "{{ item.check_node | default(omit) }}"
+    interval: "{{ item.interval | default(omit) }}"
     notes: "{{ item.notes | default(omit) }}"
     script: "{{ item.script | default(omit) }}"
     timeout: "{{ item.timeout | default(omit) }}"
@@ -14,3 +23,6 @@
     tcp: "{{ item.tcp | default(omit) }}"
     http: "{{ item.http | default(omit) }}"
   with_items: "{{ consul_service__services }}"
+  loop_control:
+    label: "{{ item.service_name | default(item.service_id | default('service')) }}"
+  no_log: "{{ consul_service__token is not none }}"
