@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Render every role template and check the result parses as HCL.
 
 This collection is almost entirely Jinja, and a broken template only shows up
@@ -170,7 +169,7 @@ def role_environment(role, overrides):
             variables[name] = yaml.safe_load(env.from_string(variables[name]).render(**variables))
 
     # Ansible resolves variable level templates lazily; do it here up front.
-    for _ in range(12):
+    for _attempt in range(12):
         changed = False
         for key, value in list(variables.items()):
             if not isinstance(value, str) or ("{{" not in value and "{%" not in value):
