@@ -130,6 +130,27 @@ consul__ui_dashboard_url_templates: {}
 
 consul__ui: true
 consul__connect_enabled: false
+
+# ACLs, see https://developer.hashicorp.com/consul/docs/agent/config/config-files#acl
+# A deny default policy locks the cluster down the moment this is enabled, so
+# bootstrap the tokens first, then flip consul__acl_enabled.
+consul__acl_enabled: false
+consul__acl_default_policy: deny
+consul__acl_down_policy: extend-cache
+consul__acl_enable_key_list_policy: false
+consul__acl_enable_token_persistence: true
+consul__acl_enable_token_replication: false
+consul__acl_policy_ttl: null
+consul__acl_role_ttl: null
+consul__acl_token_ttl: null
+
+# Tokens. Secrets, keep them in a vault file.
+consul__acl_token_initial_management: null
+consul__acl_token_agent: null
+consul__acl_token_agent_recovery: null
+consul__acl_token_default: null
+consul__acl_token_replication: null
+consul__acl_token_config_file_registration: null
 consul__group_name: consul
 
 ## Server only options

@@ -288,6 +288,54 @@ ui_config {
 {% endif %}
 }
 
+{% if consul__acl_enabled %}
+acl {
+  enabled = true
+  default_policy = "{{ consul__acl_default_policy }}"
+  down_policy = "{{ consul__acl_down_policy }}"
+  enable_key_list_policy = {{ consul__acl_enable_key_list_policy | bool | to_json }}
+  enable_token_persistence = {{ consul__acl_enable_token_persistence | bool | to_json }}
+  enable_token_replication = {{ consul__acl_enable_token_replication | bool | to_json }}
+{% if consul__acl_policy_ttl is not none %}
+  policy_ttl = "{{ consul__acl_policy_ttl }}"
+{% endif %}
+{% if consul__acl_role_ttl is not none %}
+  role_ttl = "{{ consul__acl_role_ttl }}"
+{% endif %}
+{% if consul__acl_token_ttl is not none %}
+  token_ttl = "{{ consul__acl_token_ttl }}"
+{% endif %}
+{% if consul__acl_token_initial_management is not none
+   or consul__acl_token_agent is not none
+   or consul__acl_token_agent_recovery is not none
+   or consul__acl_token_default is not none
+   or consul__acl_token_replication is not none
+   or consul__acl_token_config_file_registration is not none %}
+
+  tokens {
+{% if consul__acl_token_initial_management is not none %}
+    initial_management = "{{ consul__acl_token_initial_management }}"
+{% endif %}
+{% if consul__acl_token_agent is not none %}
+    agent = "{{ consul__acl_token_agent }}"
+{% endif %}
+{% if consul__acl_token_agent_recovery is not none %}
+    agent_recovery = "{{ consul__acl_token_agent_recovery }}"
+{% endif %}
+{% if consul__acl_token_default is not none %}
+    default = "{{ consul__acl_token_default }}"
+{% endif %}
+{% if consul__acl_token_replication is not none %}
+    replication = "{{ consul__acl_token_replication }}"
+{% endif %}
+{% if consul__acl_token_config_file_registration is not none %}
+    config_file_registration = "{{ consul__acl_token_config_file_registration }}"
+{% endif %}
+  }
+{% endif %}
+}
+
+{% endif %}
 connect {
   enabled = {{ consul__connect_enabled | bool | to_json }}
 }
