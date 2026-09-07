@@ -113,6 +113,71 @@ http_api_response_headers {
 }
 
 {% endif %}
+{% if nomad__use_consul %}
+consul {
+  address = "{{ nomad__consul_address }}"
+{% if nomad__consul_grpc_address is not none %}
+  grpc_address = "{{ nomad__consul_grpc_address }}"
+{% endif %}
+{% if nomad__consul_namespace is not none %}
+  namespace = "{{ nomad__consul_namespace }}"
+{% endif %}
+{% if nomad__consul_token is not none %}
+  token = "{{ nomad__consul_token }}"
+{% endif %}
+{% if nomad__consul_auth is not none %}
+  auth = "{{ nomad__consul_auth }}"
+{% endif %}
+  auto_advertise = {{ nomad__consul_auto_advertise | bool | to_json }}
+  server_auto_join = {{ nomad__consul_server_auto_join | bool | to_json }}
+  client_auto_join = {{ nomad__consul_client_auto_join | bool | to_json }}
+  server_service_name = "{{ nomad__consul_server_service_name }}"
+  client_service_name = "{{ nomad__consul_client_service_name }}"
+{% if nomad__consul_server_http_check_name is not none %}
+  server_http_check_name = "{{ nomad__consul_server_http_check_name }}"
+{% endif %}
+{% if nomad__consul_server_serf_check_name is not none %}
+  server_serf_check_name = "{{ nomad__consul_server_serf_check_name }}"
+{% endif %}
+{% if nomad__consul_server_rpc_check_name is not none %}
+  server_rpc_check_name = "{{ nomad__consul_server_rpc_check_name }}"
+{% endif %}
+{% if nomad__consul_client_http_check_name is not none %}
+  client_http_check_name = "{{ nomad__consul_client_http_check_name }}"
+{% endif %}
+  checks_use_advertise = {{ nomad__consul_checks_use_advertise | bool | to_json }}
+{% if nomad__consul_tags %}
+  tags = {{ nomad__consul_tags | to_json }}
+{% endif %}
+{% if nomad__consul_timeout is not none %}
+  timeout = "{{ nomad__consul_timeout }}"
+{% endif %}
+{% if 'server' in nomad__roles %}
+  allow_unauthenticated = {{ nomad__consul_allow_unauthenticated | bool | to_json }}
+{% endif %}
+{% if nomad__consul_service_auth_method is not none %}
+  service_auth_method = "{{ nomad__consul_service_auth_method }}"
+{% endif %}
+{% if nomad__consul_task_auth_method is not none %}
+  task_auth_method = "{{ nomad__consul_task_auth_method }}"
+{% endif %}
+  ssl = {{ nomad__consul_ssl | bool | to_json }}
+  verify_ssl = {{ nomad__consul_verify_ssl | bool | to_json }}
+{% if nomad__consul_share_ssl is not none %}
+  share_ssl = {{ nomad__consul_share_ssl | bool | to_json }}
+{% endif %}
+{% if nomad__consul_ca_file is not none %}
+  ca_file = "{{ nomad__consul_ca_file }}"
+{% endif %}
+{% if nomad__consul_cert_file is not none %}
+  cert_file = "{{ nomad__consul_cert_file }}"
+{% endif %}
+{% if nomad__consul_key_file is not none %}
+  key_file = "{{ nomad__consul_key_file }}"
+{% endif %}
+}
+
+{% endif %}
 {% if nomad__acl_enabled %}
 acl {
   enabled = true

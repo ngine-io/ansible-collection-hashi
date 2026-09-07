@@ -159,7 +159,41 @@ nomad__servers: |
   {% endfor %}
   {{ _nomad_servers }}
 
+# Consul integration, see
+# https://developer.hashicorp.com/nomad/docs/configuration/consul
+# nomad__use_consul also makes the systemd unit order after consul.service and
+# lets clients discover servers instead of using a static server list.
 nomad__use_consul: false
+nomad__consul_address: "127.0.0.1:8500"
+nomad__consul_grpc_address: null
+nomad__consul_namespace: null
+nomad__consul_token: null
+nomad__consul_auth: null
+nomad__consul_auto_advertise: true
+nomad__consul_server_auto_join: true
+nomad__consul_client_auto_join: true
+nomad__consul_server_service_name: nomad
+nomad__consul_client_service_name: nomad-client
+nomad__consul_server_http_check_name: null
+nomad__consul_server_serf_check_name: null
+nomad__consul_server_rpc_check_name: null
+nomad__consul_client_http_check_name: null
+nomad__consul_checks_use_advertise: false
+nomad__consul_tags: []
+nomad__consul_timeout: null
+# Set to false once every client runs a version that supports workload
+# identity based Consul auth.
+nomad__consul_allow_unauthenticated: true
+nomad__consul_service_auth_method: null
+nomad__consul_task_auth_method: null
+
+# TLS towards the Consul API
+nomad__consul_ssl: false
+nomad__consul_verify_ssl: true
+nomad__consul_share_ssl: null
+nomad__consul_ca_file: null
+nomad__consul_cert_file: null
+nomad__consul_key_file: null
 
 nomad__client_meta: {}
 nomad__client_network_interface: null
