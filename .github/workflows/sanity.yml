@@ -5,6 +5,11 @@ on:
     - cron: "5 12 * * *"
   pull_request:
 
+env:
+  # ansible-lint and ansible-playbook only resolve "ngine_io.hashi.<role>" when
+  # the checkout sits in an ansible_collections/<namespace>/<name> path.
+  COLLECTION_PATH: ansible_collections/ngine_io/hashi
+
 jobs:
   sanity:
     name: Sanity (${{ matrix.ansible }})
@@ -37,6 +42,41 @@ jobs:
       - name: Run sanity tests
         run: ansible-test sanity --docker -v --color
 
+  lint:
+    name: Lint and syntax
+    defaults:
+      run:
+        working-directory: ansible_collections/ngine_io/hashi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          path: ansible_collections/ngine_io/hashi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install ansible-lint
+        run: pip install ansible-lint --disable-pip-version-check
+
+      - name: Install collection dependencies
+        run: ansible-galaxy collection install -r tests/requirements.yml
+
+      # Fails on anything below the production profile, configured in
+      # .ansible-lint. Justified exceptions live in .ansible-lint-ignore and
+      # in inline noqa comments, never in a global skip_list.
+      - name: Run ansible-lint
+        run: ansible-lint
+
+      # ansible-lint runs its own syntax check, but only over what it decides
+      # to look at. This checks the playbooks the README documents, so the
+      # documented usage cannot drift away from the roles.
+      - name: Syntax check the example playbooks
+        run: ansible-playbook -i tests/inventory --syntax-check tests/playbooks/*.yml
+
   templates:
     name: Templates
     runs-on: ubuntu-latest
@@ -52,25 +92,7 @@ jobs:
       - name: Install dependencies
         run: pip install jinja2 pyyaml python-hcl2 --disable-pip-version-check
 
-      # The collection is almost entirely Jinja, and ansible-test does not
-      # look at templates at all.
+      # The collection is almost entirely Jinja, and neither ansible-test nor
+      # ansible-lint looks inside a template.
       - name: Render every template and parse the result as HCL
         run: python3 tests/render_templates.py
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Install ansible-lint
-        run: pip install ansible-lint --disable-pip-version-check
-
-      - name: Run ansible-lint
-        run: ansible-lint

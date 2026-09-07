@@ -1,0 +1,5 @@
+---
+# Collections the roles call into, mirroring galaxy.yml dependencies.
+collections:
+  - name: community.general
+  - name: ansible.posix

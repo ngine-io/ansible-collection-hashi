@@ -1,4 +1,6 @@
 ---
 exclude_paths:
   - .github/
-  - tests/
+
+# Fail on anything below the strictest profile.
+profile: production

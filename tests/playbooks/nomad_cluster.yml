@@ -1,0 +1,45 @@
+---
+# The cluster playbook from the collection README. It is syntax checked in CI
+# so the documented usage cannot drift away from the roles.
+- name: Configure Nomad servers
+  hosts: nomad_servers
+  serial: 1
+  vars:
+    consul__role: server
+    nomad__node_class: server
+    nomad__roles:
+      - server
+  roles:
+    - role: ngine_io.hashi.consul
+      tags: consul
+    - role: ngine_io.hashi.nomad
+      tags: nomad
+
+- name: Configure Nomad clients
+  hosts: nomad_clients
+  serial:
+    - 1
+    - 30%
+  vars:
+    consul__role: client
+    nomad__roles:
+      - client
+  roles:
+    - role: ngine_io.hashi.consul
+      tags: consul
+    - role: ngine_io.hashi.cni
+      tags: cni
+    - role: ngine_io.hashi.nomad
+      tags: nomad
+
+- name: Submit Nomad jobs
+  hosts: nomad_servers[0]
+  vars:
+    nomad_job__job_templates:
+      - name: http-echo
+        path: http-echo.nomad
+      - name: traefik
+        path: traefik.nomad
+  roles:
+    - role: ngine_io.hashi.nomad_job
+      tags: nomad_job

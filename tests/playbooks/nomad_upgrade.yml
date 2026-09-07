@@ -1,0 +1,23 @@
+---
+# The rolling upgrade playbook from the collection README.
+- name: Upgrade Nomad servers
+  hosts: nomad_servers
+  serial: 1
+  vars:
+    nomad__roles:
+      - server
+  roles:
+    - role: ngine_io.hashi.nomad_upgrade
+      tags: nomad
+
+- name: Upgrade Nomad clients
+  hosts: nomad_clients
+  serial:
+    - 1
+    - 30%
+  vars:
+    nomad__roles:
+      - client
+  roles:
+    - role: ngine_io.hashi.nomad_upgrade
+      tags: nomad
