@@ -131,6 +131,32 @@ consul__ui_dashboard_url_templates: {}
 consul__ui: true
 consul__connect_enabled: false
 consul__group_name: consul
+
+## Server only options
+# Number of servers expected before the cluster bootstraps. Derived from the
+# inventory; override when growing a cluster in place.
+consul__bootstrap_expect: "{{ consul__servers | count }}"
+# Single node bootstrap. Never enable this on more than one server.
+consul__bootstrap: false
+consul__raft_protocol: null
+consul__raft_snapshot_threshold: null
+consul__raft_snapshot_interval: null
+consul__raft_trailing_logs: null
+consul__read_replica: false
+consul__license_path: null
+consul__reconnect_timeout: null
+consul__reconnect_timeout_wan: null
+
+# Autopilot, see
+# https://developer.hashicorp.com/consul/docs/agent/config/config-files#autopilot
+consul__autopilot_cleanup_dead_servers: true
+consul__autopilot_last_contact_threshold: null
+consul__autopilot_max_trailing_logs: null
+consul__autopilot_min_quorum: null
+consul__autopilot_server_stabilization_time: null
+consul__autopilot_redundancy_zone_tag: null
+consul__autopilot_disable_upgrade_migration: false
+consul__autopilot_upgrade_version_tag: null
 consul__data_dir: /opt/consul
 consul__encrypt: ""
 

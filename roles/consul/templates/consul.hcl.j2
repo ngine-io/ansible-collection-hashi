@@ -14,7 +14,57 @@ node_name = "{{ consul__node_name }}"
 server = {{ (consul__role == 'server') | bool | to_json }}
 
 {% if consul__role == 'server' %}
-bootstrap_expect = {{ consul__servers | count }}
+bootstrap_expect = {{ consul__bootstrap_expect | int }}
+{% if consul__bootstrap | bool %}
+bootstrap = true
+{% endif %}
+{% if consul__raft_protocol is not none %}
+raft_protocol = {{ consul__raft_protocol | int }}
+{% endif %}
+{% if consul__raft_snapshot_threshold is not none %}
+raft_snapshot_threshold = {{ consul__raft_snapshot_threshold | int }}
+{% endif %}
+{% if consul__raft_snapshot_interval is not none %}
+raft_snapshot_interval = "{{ consul__raft_snapshot_interval }}"
+{% endif %}
+{% if consul__raft_trailing_logs is not none %}
+raft_trailing_logs = {{ consul__raft_trailing_logs | int }}
+{% endif %}
+{% if consul__read_replica | bool %}
+read_replica = true
+{% endif %}
+{% if consul__license_path is not none %}
+license_path = "{{ consul__license_path }}"
+{% endif %}
+{% if consul__reconnect_timeout is not none %}
+reconnect_timeout = "{{ consul__reconnect_timeout }}"
+{% endif %}
+{% if consul__reconnect_timeout_wan is not none %}
+reconnect_timeout_wan = "{{ consul__reconnect_timeout_wan }}"
+{% endif %}
+
+autopilot {
+  cleanup_dead_servers = {{ consul__autopilot_cleanup_dead_servers | bool | to_json }}
+{% if consul__autopilot_last_contact_threshold is not none %}
+  last_contact_threshold = "{{ consul__autopilot_last_contact_threshold }}"
+{% endif %}
+{% if consul__autopilot_max_trailing_logs is not none %}
+  max_trailing_logs = {{ consul__autopilot_max_trailing_logs | int }}
+{% endif %}
+{% if consul__autopilot_min_quorum is not none %}
+  min_quorum = {{ consul__autopilot_min_quorum | int }}
+{% endif %}
+{% if consul__autopilot_server_stabilization_time is not none %}
+  server_stabilization_time = "{{ consul__autopilot_server_stabilization_time }}"
+{% endif %}
+{% if consul__autopilot_redundancy_zone_tag is not none %}
+  redundancy_zone_tag = "{{ consul__autopilot_redundancy_zone_tag }}"
+{% endif %}
+  disable_upgrade_migration = {{ consul__autopilot_disable_upgrade_migration | bool | to_json }}
+{% if consul__autopilot_upgrade_version_tag is not none %}
+  upgrade_version_tag = "{{ consul__autopilot_upgrade_version_tag }}"
+{% endif %}
+}
 {% endif %}
 
 {% if consul__encrypt %}
