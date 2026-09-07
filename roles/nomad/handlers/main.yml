@@ -1,5 +1,5 @@
 ---
-- name: restart nomad
+- name: Restart nomad
   ansible.builtin.systemd:
     name: nomad
     state: restarted

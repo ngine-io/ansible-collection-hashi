@@ -1,5 +1,5 @@
 ---
-- name: restart consul
+- name: Restart consul
   ansible.builtin.systemd:
     name: consul
     state: restarted

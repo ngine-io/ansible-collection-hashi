@@ -3,7 +3,7 @@
   ansible.builtin.package:
     name: "{{ [nomad__package_spec] + nomad__extra_packages }}"
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Ensure config directory exists
   ansible.builtin.file:
@@ -25,7 +25,7 @@
     group: "{{ nomad__config_group }}"
     mode: "{{ nomad__config_file_mode }}"
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Configure unit file for systemd
   ansible.builtin.template:
@@ -35,7 +35,7 @@
     group: root
     mode: 0644
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Configure sysctl for bridge networking
   ansible.builtin.sysctl:
@@ -82,7 +82,7 @@
     - item.content is not none
   no_log: true
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Configure base config
   ansible.builtin.template:
@@ -92,7 +92,7 @@
     group: "{{ nomad__config_group }}"
     mode: "{{ nomad__config_file_mode }}"
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Configure server
   ansible.builtin.template:
@@ -103,7 +103,7 @@
     mode: "{{ nomad__config_file_mode }}"
   when: "'server' in nomad__roles"
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Remove server config
   ansible.builtin.file:
@@ -111,7 +111,7 @@
     state: absent
   when: "'server' not in nomad__roles"
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Create host volumes
   ansible.builtin.file:
@@ -129,7 +129,7 @@
     mode: "{{ nomad__config_file_mode }}"
   when: "'client' in nomad__roles"
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Remove client config
   ansible.builtin.file:
@@ -137,7 +137,7 @@
     state: absent
   when: "'client' not in nomad__roles"
   notify:
-    - restart nomad
+    - Restart nomad
 
 # Nomad merges every .hcl and .json file in the config directory. The zz-
 # prefix keeps these last so they win over what the role renders.
@@ -150,7 +150,7 @@
     mode: "{{ nomad__config_file_mode }}"
   when: nomad__extra_config
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Remove extra config
   ansible.builtin.file:
@@ -158,7 +158,7 @@
     state: absent
   when: not nomad__extra_config
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Configure extra config files
   ansible.builtin.copy:
@@ -171,7 +171,7 @@
   loop_control:
     label: "{{ item.key }}"
   notify:
-    - restart nomad
+    - Restart nomad
 
 - name: Ensure data directory exists
   ansible.builtin.file:

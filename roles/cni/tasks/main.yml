@@ -27,7 +27,7 @@
     src: "{{ cni__install_path }}/bin-{{ cni__version }}"
     dest: "{{ cni__install_path }}/bin"
     state: link
-  notify: event CNI changed
+  notify: Event CNI changed
 
 - name: Configure CNI plugins
   ansible.builtin.copy:
@@ -36,4 +36,4 @@
   with_items: "{{ cni__configs }}"
   loop_control:
     label: "{{ item.name }}"
-  notify: event CNI changed
+  notify: Event CNI changed
