@@ -115,8 +115,33 @@ http_api_response_headers {
 {% endif %}
 telemetry {
   collection_interval = "{{ nomad__telemetry_collection_interval }}"
-  disable_hostname = true
-  prometheus_metrics = true
-  publish_allocation_metrics = true
-  publish_node_metrics = true
+  disable_hostname = {{ nomad__telemetry_disable_hostname | bool | to_json }}
+  use_node_name = {{ nomad__telemetry_use_node_name | bool | to_json }}
+  prometheus_metrics = {{ nomad__telemetry_prometheus_metrics | bool | to_json }}
+  publish_allocation_metrics = {{ nomad__telemetry_publish_allocation_metrics | bool | to_json }}
+  publish_node_metrics = {{ nomad__telemetry_publish_node_metrics | bool | to_json }}
+  disable_dispatched_job_summary_metrics = {{ nomad__telemetry_disable_dispatched_job_summary_metrics | bool | to_json }}
+  include_alloc_metadata_in_metrics = {{ nomad__telemetry_include_alloc_metadata_in_metrics | bool | to_json }}
+  filter_default = {{ nomad__telemetry_filter_default | bool | to_json }}
+{% if nomad__telemetry_prefix_filter %}
+  prefix_filter = {{ nomad__telemetry_prefix_filter | to_json }}
+{% endif %}
+{% if nomad__telemetry_in_memory_collection_interval is not none %}
+  in_memory_collection_interval = "{{ nomad__telemetry_in_memory_collection_interval }}"
+{% endif %}
+{% if nomad__telemetry_in_memory_retention_period is not none %}
+  in_memory_retention_period = "{{ nomad__telemetry_in_memory_retention_period }}"
+{% endif %}
+{% if nomad__telemetry_statsite_address is not none %}
+  statsite_address = "{{ nomad__telemetry_statsite_address }}"
+{% endif %}
+{% if nomad__telemetry_statsd_address is not none %}
+  statsd_address = "{{ nomad__telemetry_statsd_address }}"
+{% endif %}
+{% if nomad__telemetry_datadog_address is not none %}
+  datadog_address = "{{ nomad__telemetry_datadog_address }}"
+{% endif %}
+{% if nomad__telemetry_datadog_tags %}
+  datadog_tags = {{ nomad__telemetry_datadog_tags | to_json }}
+{% endif %}
 }

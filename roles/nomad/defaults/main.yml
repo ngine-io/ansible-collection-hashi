@@ -83,7 +83,26 @@ nomad__limits_rpc_max_conns_per_client: null
 # Extra headers returned by the HTTP API, e.g. CORS headers.
 nomad__http_api_response_headers: {}
 
+# Telemetry, see https://developer.hashicorp.com/nomad/docs/configuration/telemetry
 nomad__telemetry_collection_interval: 60s
+nomad__telemetry_disable_hostname: true
+nomad__telemetry_use_node_name: false
+nomad__telemetry_publish_allocation_metrics: true
+nomad__telemetry_publish_node_metrics: true
+nomad__telemetry_disable_dispatched_job_summary_metrics: false
+nomad__telemetry_include_alloc_metadata_in_metrics: false
+nomad__telemetry_filter_default: true
+nomad__telemetry_prefix_filter: []
+nomad__telemetry_in_memory_collection_interval: null
+nomad__telemetry_in_memory_retention_period: null
+
+# Sinks. The Prometheus endpoint on /v1/metrics is on by default, the push
+# based sinks stay off until an address is configured.
+nomad__telemetry_prometheus_metrics: true
+nomad__telemetry_statsite_address: null
+nomad__telemetry_statsd_address: null
+nomad__telemetry_datadog_address: null
+nomad__telemetry_datadog_tags: []
 
 # Ansible Inventory Nomad Group Name of Servers
 nomad__server_group_name: nomad_servers
