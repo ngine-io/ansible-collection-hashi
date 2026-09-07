@@ -1,2 +1,31 @@
 ---
+# "*" upgrades every package on the host, which together with the reboot below
+# makes this a full host upgrade that happens to be Nomad aware. Set it to
+# "nomad" to move only the agent.
 nomad_upgrade__package_name: "*"
+
+# Only clients can be drained. On a server only node the drain commands fail,
+# so they are skipped. nomad__roles is set by the nomad role's inventory.
+nomad_upgrade__is_client: "{{ 'client' in (nomad__roles | default(['client'])) }}"
+
+nomad_upgrade__drain_deadline: 1h
+# Migrate system jobs as well. Leaving them running means the node is not
+# really empty when the reboot comes.
+nomad_upgrade__drain_ignore_system_jobs: false
+
+nomad_upgrade__reboot: true
+nomad_upgrade__reboot_timeout: 3600
+
+# Seconds to let the rescheduled allocations settle before the play moves on
+# to the next host. 0 disables the pause.
+nomad_upgrade__settle_seconds: 60
+
+nomad_upgrade__retries: 5
+nomad_upgrade__delay: 10
+
+# API access, needed once the cluster runs with TLS or ACLs.
+nomad_upgrade__nomad_addr: "{{ 'https' if (nomad__tls_enabled | default(false) | bool) else 'http' }}://127.0.0.1:{{ nomad__port_http | default(4646) }}"
+nomad_upgrade__nomad_token: null
+nomad_upgrade__nomad_cacert: null
+nomad_upgrade__nomad_client_cert: null
+nomad_upgrade__nomad_client_key: null

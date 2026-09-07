@@ -1,52 +1,97 @@
 ---
-- name: Update package cache for Debian
-  ansible.builtin.apt:
-    update_cache: true
-    cache_valid_time: 600
-  when: ansible_os_family == 'Debian'
-
-- name: Check all packages to their latest version
-  ansible.builtin.package:
-    name: "{{ nomad_upgrade__package_name }}"
-    state: latest
-  check_mode: true
-  register: updates_available
-
-- name: Ensure Nomad eligibility enabled if unchanged
-  when: updates_available is not changed
-  command: nomad node eligibility -self -enable
-  register: eligibility_node
-  until: eligibility_node.rc == 0
-  retries: 5
-  delay: 10
-  changed_when: false
-
-- name: Process package updates
-  when: updates_available is changed
+- name: Upgrade block
+  environment:
+    NOMAD_ADDR: "{{ nomad_upgrade__nomad_addr }}"
+    NOMAD_TOKEN: "{{ nomad_upgrade__nomad_token | default('', true) }}"
+    NOMAD_CACERT: "{{ nomad_upgrade__nomad_cacert | default('', true) }}"
+    NOMAD_CLIENT_CERT: "{{ nomad_upgrade__nomad_client_cert | default('', true) }}"
+    NOMAD_CLIENT_KEY: "{{ nomad_upgrade__nomad_client_key | default('', true) }}"
   block:
-    - name: Nomad drain node
-      command: nomad node drain -self -enable
-      register: drain_node
-      until: drain_node.rc == 0
-      retries: 5
-      delay: 10
+    - name: Update package cache for Debian
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 600
+      when: ansible_os_family == 'Debian'
 
-    - name: Update all packages to their latest version
+    - name: Check all packages to their latest version
       ansible.builtin.package:
         name: "{{ nomad_upgrade__package_name }}"
         state: latest
+      check_mode: true
+      register: updates_available
 
-    - name: Reboot host
-      ansible.builtin.reboot:
-        reboot_timeout: 3600
-
-    - name: Nomad eligibility enable node
-      command: nomad node eligibility -self -enable
+    - name: Ensure Nomad eligibility enabled if unchanged
+      when:
+        - updates_available is not changed
+        - nomad_upgrade__is_client | bool
+      ansible.builtin.command: nomad node eligibility -self -enable
       register: eligibility_node
       until: eligibility_node.rc == 0
-      retries: 5
-      delay: 10
+      retries: "{{ nomad_upgrade__retries }}"
+      delay: "{{ nomad_upgrade__delay }}"
+      changed_when: false
 
-    - name: Pause for some time
-      ansible.builtin.pause:
-        minutes: 1
+    - name: Process package updates
+      when: updates_available is changed
+      block:
+        - name: Nomad drain node
+          ansible.builtin.command: >
+            nomad node drain -self -enable
+            -deadline {{ nomad_upgrade__drain_deadline }}
+            -ignore-system={{ nomad_upgrade__drain_ignore_system_jobs | bool | lower }}
+          register: drain_node
+          until: drain_node.rc == 0
+          retries: "{{ nomad_upgrade__retries }}"
+          delay: "{{ nomad_upgrade__delay }}"
+          when: nomad_upgrade__is_client | bool
+
+        - name: Update all packages to their latest version
+          ansible.builtin.package:
+            name: "{{ nomad_upgrade__package_name }}"
+            state: latest
+
+        - name: Reboot host
+          ansible.builtin.reboot:
+            reboot_timeout: "{{ nomad_upgrade__reboot_timeout }}"
+          when: nomad_upgrade__reboot | bool
+
+        - name: Restart nomad
+          ansible.builtin.systemd:
+            name: nomad
+            state: restarted
+          when: not nomad_upgrade__reboot | bool
+
+        - name: Wait for the agent to answer again
+          ansible.builtin.command: nomad agent-info
+          register: agent_info
+          until: agent_info.rc == 0
+          retries: "{{ nomad_upgrade__retries }}"
+          delay: "{{ nomad_upgrade__delay }}"
+          changed_when: false
+
+        - name: Wait for the server to rejoin the raft peer set
+          ansible.builtin.shell: >
+            set -o pipefail &&
+            nomad operator raft list-peers | grep -c -E '\b(leader|follower)\b'
+          args:
+            executable: /bin/bash
+          register: raft_peers
+          until: raft_peers.rc == 0 and raft_peers.stdout | int >= (nomad__servers | default([]) | count)
+          retries: "{{ nomad_upgrade__retries }}"
+          delay: "{{ nomad_upgrade__delay }}"
+          changed_when: false
+          when: "'server' in (nomad__roles | default([]))"
+
+        - name: Nomad eligibility enable node
+          ansible.builtin.command: nomad node eligibility -self -enable
+          register: eligibility_node
+          until: eligibility_node.rc == 0
+          retries: "{{ nomad_upgrade__retries }}"
+          delay: "{{ nomad_upgrade__delay }}"
+          changed_when: false
+          when: nomad_upgrade__is_client | bool
+
+        - name: Let the rescheduled allocations settle
+          ansible.builtin.pause:
+            seconds: "{{ nomad_upgrade__settle_seconds }}"
+          when: nomad_upgrade__settle_seconds | int > 0
