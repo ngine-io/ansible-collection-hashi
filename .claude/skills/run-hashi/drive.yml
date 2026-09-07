@@ -1,0 +1,145 @@
+---
+# Exercises the collection's modules and roles against the live agents the
+# driver started. Every task asserts, so a regression fails the play.
+- name: Drive ngine_io.hashi against live Nomad and Consul
+  hosts: localhost
+  gather_facts: false
+  module_defaults:
+    group/ngine_io.hashi.nomad:
+      url: "{{ nomad_addr }}"
+  vars:
+    nomad_addr: http://127.0.0.1:4646
+    consul_addr: http://127.0.0.1:8500
+  tasks:
+    - name: Agent info
+      ngine_io.hashi.nomad_agent_info:
+      register: agent
+
+    - name: Raft info
+      ngine_io.hashi.nomad_raft_info:
+      register: raft
+
+    - name: The agent is a server with a leader
+      ansible.builtin.assert:
+        that:
+          - agent.is_server
+          - raft.leader is not none
+          - raft.voters | length >= 1
+        success_msg: "leader={{ raft.leader }} voters={{ raft.voters | length }}"
+
+    - name: Submit a job in check mode
+      ngine_io.hashi.nomad_job:
+        content: "{{ lookup('file', playbook_dir + '/fixtures/echo.nomad') }}"
+      check_mode: true
+      register: job_check
+
+    - name: Check mode did not create the job
+      ngine_io.hashi.nomad_job:
+        name: echo
+        state: absent
+      check_mode: true
+      register: job_absent_check
+
+    - name: Submit the job
+      ngine_io.hashi.nomad_job:
+        content: "{{ lookup('file', playbook_dir + '/fixtures/echo.nomad') }}"
+      register: job_run
+
+    - name: Submit the same job again
+      ngine_io.hashi.nomad_job:
+        content: "{{ lookup('file', playbook_dir + '/fixtures/echo.nomad') }}"
+      register: job_again
+
+    - name: The job is idempotent and check mode wrote nothing
+      ansible.builtin.assert:
+        that:
+          - job_check.changed
+          - not job_absent_check.changed
+          - job_run.changed
+          - job_run.diff_type == 'Added'
+          - not job_again.changed
+          - job_again.diff_type == 'None'
+        success_msg: "added then unchanged, check mode left the catalog empty"
+
+    - name: Stop the job
+      ngine_io.hashi.nomad_job: {name: echo, state: absent}
+      register: job_stop
+
+    - name: Stop it again
+      ngine_io.hashi.nomad_job: {name: echo, state: absent}
+      register: job_stop_again
+
+    - name: Purge the job
+      ngine_io.hashi.nomad_job: {name: echo, state: absent, purge: true}
+      register: job_purge
+
+    - name: Stopping and purging behave
+      ansible.builtin.assert:
+        that:
+          - job_stop.changed
+          - not job_stop_again.changed
+          - job_purge.changed
+
+    - name: Node lifecycle
+      when: agent.is_client
+      block:
+        - name: Drain in check mode
+          ngine_io.hashi.nomad_node: {drain: true, wait_timeout: 120}
+          check_mode: true
+          register: drain_check
+
+        - name: Drain
+          ngine_io.hashi.nomad_node: {drain: true, wait_timeout: 120}
+          register: drain_run
+
+        - name: Drain again
+          ngine_io.hashi.nomad_node: {drain: true, wait_timeout: 120}
+          register: drain_again
+
+        - name: Re-enable eligibility
+          ngine_io.hashi.nomad_node: {drain: false, eligible: true}
+          register: eligible_run
+
+        - name: Re-enable eligibility again
+          ngine_io.hashi.nomad_node: {drain: false, eligible: true}
+          register: eligible_again
+
+        - name: Draining is idempotent
+          # This is the case worth proving against a real agent: Nomad clears
+          # DrainStrategy once a drain finishes but leaves the node
+          # ineligible, so a naive implementation drains a second time.
+          ansible.builtin.assert:
+            that:
+              - drain_check.changed
+              - drain_run.changed
+              - not drain_again.changed
+              - eligible_run.changed
+              - not eligible_again.changed
+              - eligible_again.scheduling_eligibility == 'eligible'
+            success_msg: "drain -> no-op, eligibility -> no-op on {{ drain_run.name }}"
+
+    - name: Register a service through the consul_service role
+      when: consul_enabled | default(false) | bool
+      block:
+        - name: Run the role
+          ansible.builtin.include_role:
+            name: ngine_io.hashi.consul_service
+          vars:
+            consul_service__host: 127.0.0.1
+            consul_service__services:
+              - service_name: node-exporter
+                service_port: 9100
+                service_address: 127.0.0.1
+                tags: [metrics]
+
+        - name: Read it back from the catalog
+          ansible.builtin.uri:
+            url: "{{ consul_addr }}/v1/catalog/service/node-exporter"
+          register: catalog
+
+        - name: The service is in the catalog
+          ansible.builtin.assert:
+            that:
+              - catalog.json | length > 0
+              - catalog.json[0].ServicePort == 9100
+            success_msg: "node-exporter registered on port 9100"
