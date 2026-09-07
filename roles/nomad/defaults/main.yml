@@ -83,6 +83,18 @@ nomad__limits_rpc_max_conns_per_client: null
 # Extra headers returned by the HTTP API, e.g. CORS headers.
 nomad__http_api_response_headers: {}
 
+# ACLs, see https://developer.hashicorp.com/nomad/docs/configuration/acl
+# Enabling this only turns on enforcement. Bootstrapping the initial
+# management token and writing policies stays a deliberate manual step.
+nomad__acl_enabled: false
+nomad__acl_token_ttl: null
+nomad__acl_policy_ttl: null
+nomad__acl_role_ttl: null
+nomad__acl_token_min_expiration_ttl: null
+nomad__acl_token_max_expiration_ttl: null
+# Secret. Only needed on servers in a multi region federation.
+nomad__acl_replication_token: null
+
 # TLS, see https://developer.hashicorp.com/nomad/docs/configuration/tls
 # Certificates are expected to already be on the host. Alternatively set the
 # *_content variables below and the role writes them out.

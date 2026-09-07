@@ -113,6 +113,30 @@ http_api_response_headers {
 }
 
 {% endif %}
+{% if nomad__acl_enabled %}
+acl {
+  enabled = true
+{% if nomad__acl_token_ttl is not none %}
+  token_ttl = "{{ nomad__acl_token_ttl }}"
+{% endif %}
+{% if nomad__acl_policy_ttl is not none %}
+  policy_ttl = "{{ nomad__acl_policy_ttl }}"
+{% endif %}
+{% if nomad__acl_role_ttl is not none %}
+  role_ttl = "{{ nomad__acl_role_ttl }}"
+{% endif %}
+{% if nomad__acl_token_min_expiration_ttl is not none %}
+  token_min_expiration_ttl = "{{ nomad__acl_token_min_expiration_ttl }}"
+{% endif %}
+{% if nomad__acl_token_max_expiration_ttl is not none %}
+  token_max_expiration_ttl = "{{ nomad__acl_token_max_expiration_ttl }}"
+{% endif %}
+{% if nomad__acl_replication_token is not none %}
+  replication_token = "{{ nomad__acl_replication_token }}"
+{% endif %}
+}
+
+{% endif %}
 {% if nomad__tls_enabled %}
 tls {
   http = {{ nomad__tls_http | bool | to_json }}
