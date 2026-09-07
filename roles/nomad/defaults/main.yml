@@ -166,6 +166,72 @@ nomad__telemetry_datadog_tags: []
 # Ansible Inventory Nomad Group Name of Servers
 nomad__server_group_name: nomad_servers
 
+# Number of servers expected before the cluster bootstraps. Derived from the
+# inventory group; override when growing a cluster in place.
+nomad__server_bootstrap_expect: "{{ nomad__servers | count }}"
+
+# Gossip encryption key, "nomad operator gossip keyring generate". Servers
+# without a matching key cannot join each other.
+nomad__server_encrypt: null
+
+nomad__server_authoritative_region: null
+nomad__server_enabled_schedulers: []
+nomad__server_num_schedulers: null
+nomad__server_raft_protocol: null
+# Multiplier on the Raft timeouts. 1 is the tight, low latency setting, 5 the
+# relaxed one for cloud or cross-AZ networks.
+nomad__server_raft_multiplier: null
+nomad__server_non_voting_server: false
+nomad__server_redundancy_zone: null
+nomad__server_upgrade_version: null
+nomad__server_license_path: null
+nomad__server_rejoin_after_leave: false
+nomad__server_oidc_issuer: null
+nomad__server_job_max_priority: null
+nomad__server_job_default_priority: null
+nomad__server_enable_event_broker: true
+nomad__server_event_buffer_size: null
+
+# How servers find each other. Defaults to the inventory derived list unless
+# Consul is used for discovery.
+nomad__server_retry_join: "{{ [] if nomad__use_consul else nomad__servers }}"
+nomad__server_retry_interval: null
+nomad__server_retry_max: null
+nomad__server_start_join: []
+
+# Garbage collection
+nomad__server_job_gc_interval: null
+nomad__server_job_gc_threshold: null
+nomad__server_eval_gc_threshold: null
+nomad__server_node_gc_threshold: null
+nomad__server_deployment_gc_threshold: null
+nomad__server_csi_volume_claim_gc_threshold: null
+nomad__server_csi_plugin_gc_threshold: null
+nomad__server_acl_token_gc_threshold: null
+
+# Heartbeats. Raising the grace period avoids mass reschedules when a network
+# blip makes many clients miss a heartbeat at once.
+nomad__server_heartbeat_grace: null
+nomad__server_min_heartbeat_ttl: null
+nomad__server_failover_heartbeat_ttl: null
+nomad__server_max_heartbeats_per_second: null
+
+# Plan rejection tracker, marks a client ineligible after repeated rejections.
+nomad__server_plan_rejection_tracker_enabled: false
+nomad__server_plan_rejection_tracker_node_threshold: null
+nomad__server_plan_rejection_tracker_node_window: null
+
+# Autopilot, see
+# https://developer.hashicorp.com/nomad/docs/configuration/autopilot
+nomad__autopilot_cleanup_dead_servers: true
+nomad__autopilot_last_contact_threshold: null
+nomad__autopilot_max_trailing_logs: null
+nomad__autopilot_min_quorum: null
+nomad__autopilot_server_stabilization_time: null
+nomad__autopilot_enable_redundancy_zones: false
+nomad__autopilot_disable_upgrade_migration: false
+nomad__autopilot_enable_custom_upgrades: false
+
 # See https://www.nomadproject.io/docs/configuration/server#configuring-scheduler-config for limitations
 nomad__server_scheduler_scheduler_algorithm: "binpack"
 nomad__server_scheduler_memory_oversubscription_enabled: false

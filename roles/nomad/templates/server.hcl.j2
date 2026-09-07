@@ -1,7 +1,120 @@
 # {{ ansible_managed }}
+# https://developer.hashicorp.com/nomad/docs/configuration/server
 server {
   enabled = true
-  bootstrap_expect = {{ nomad__servers | count }}
+  bootstrap_expect = {{ nomad__server_bootstrap_expect | int }}
+{% if nomad__server_encrypt is not none %}
+  encrypt = "{{ nomad__server_encrypt }}"
+{% endif %}
+{% if nomad__server_authoritative_region is not none %}
+  authoritative_region = "{{ nomad__server_authoritative_region }}"
+{% endif %}
+{% if nomad__server_enabled_schedulers %}
+  enabled_schedulers = {{ nomad__server_enabled_schedulers | to_json }}
+{% endif %}
+{% if nomad__server_num_schedulers is not none %}
+  num_schedulers = {{ nomad__server_num_schedulers | int }}
+{% endif %}
+{% if nomad__server_raft_protocol is not none %}
+  raft_protocol = {{ nomad__server_raft_protocol | int }}
+{% endif %}
+{% if nomad__server_raft_multiplier is not none %}
+  raft_multiplier = {{ nomad__server_raft_multiplier | int }}
+{% endif %}
+  non_voting_server = {{ nomad__server_non_voting_server | bool | to_json }}
+{% if nomad__server_redundancy_zone is not none %}
+  redundancy_zone = "{{ nomad__server_redundancy_zone }}"
+{% endif %}
+{% if nomad__server_upgrade_version is not none %}
+  upgrade_version = "{{ nomad__server_upgrade_version }}"
+{% endif %}
+{% if nomad__server_license_path is not none %}
+  license_path = "{{ nomad__server_license_path }}"
+{% endif %}
+  rejoin_after_leave = {{ nomad__server_rejoin_after_leave | bool | to_json }}
+{% if nomad__server_oidc_issuer is not none %}
+  oidc_issuer = "{{ nomad__server_oidc_issuer }}"
+{% endif %}
+{% if nomad__server_job_max_priority is not none %}
+  job_max_priority = {{ nomad__server_job_max_priority | int }}
+{% endif %}
+{% if nomad__server_job_default_priority is not none %}
+  job_default_priority = {{ nomad__server_job_default_priority | int }}
+{% endif %}
+  enable_event_broker = {{ nomad__server_enable_event_broker | bool | to_json }}
+{% if nomad__server_event_buffer_size is not none %}
+  event_buffer_size = {{ nomad__server_event_buffer_size | int }}
+{% endif %}
+
+{# Garbage collection #}
+{% if nomad__server_job_gc_interval is not none %}
+  job_gc_interval = "{{ nomad__server_job_gc_interval }}"
+{% endif %}
+{% if nomad__server_job_gc_threshold is not none %}
+  job_gc_threshold = "{{ nomad__server_job_gc_threshold }}"
+{% endif %}
+{% if nomad__server_eval_gc_threshold is not none %}
+  eval_gc_threshold = "{{ nomad__server_eval_gc_threshold }}"
+{% endif %}
+{% if nomad__server_node_gc_threshold is not none %}
+  node_gc_threshold = "{{ nomad__server_node_gc_threshold }}"
+{% endif %}
+{% if nomad__server_deployment_gc_threshold is not none %}
+  deployment_gc_threshold = "{{ nomad__server_deployment_gc_threshold }}"
+{% endif %}
+{% if nomad__server_csi_volume_claim_gc_threshold is not none %}
+  csi_volume_claim_gc_threshold = "{{ nomad__server_csi_volume_claim_gc_threshold }}"
+{% endif %}
+{% if nomad__server_csi_plugin_gc_threshold is not none %}
+  csi_plugin_gc_threshold = "{{ nomad__server_csi_plugin_gc_threshold }}"
+{% endif %}
+{% if nomad__server_acl_token_gc_threshold is not none %}
+  acl_token_gc_threshold = "{{ nomad__server_acl_token_gc_threshold }}"
+{% endif %}
+
+{# Heartbeats #}
+{% if nomad__server_heartbeat_grace is not none %}
+  heartbeat_grace = "{{ nomad__server_heartbeat_grace }}"
+{% endif %}
+{% if nomad__server_min_heartbeat_ttl is not none %}
+  min_heartbeat_ttl = "{{ nomad__server_min_heartbeat_ttl }}"
+{% endif %}
+{% if nomad__server_failover_heartbeat_ttl is not none %}
+  failover_heartbeat_ttl = "{{ nomad__server_failover_heartbeat_ttl }}"
+{% endif %}
+{% if nomad__server_max_heartbeats_per_second is not none %}
+  max_heartbeats_per_second = {{ nomad__server_max_heartbeats_per_second }}
+{% endif %}
+
+{% if nomad__server_plan_rejection_tracker_enabled | bool %}
+  plan_rejection_tracker {
+    enabled = true
+{% if nomad__server_plan_rejection_tracker_node_threshold is not none %}
+    node_threshold = {{ nomad__server_plan_rejection_tracker_node_threshold | int }}
+{% endif %}
+{% if nomad__server_plan_rejection_tracker_node_window is not none %}
+    node_window = "{{ nomad__server_plan_rejection_tracker_node_window }}"
+{% endif %}
+  }
+
+{% endif %}
+{% if nomad__server_retry_join or nomad__server_start_join %}
+  server_join {
+{% if nomad__server_retry_join %}
+    retry_join = {{ nomad__server_retry_join | to_json }}
+{% endif %}
+{% if nomad__server_retry_interval is not none %}
+    retry_interval = "{{ nomad__server_retry_interval }}"
+{% endif %}
+{% if nomad__server_retry_max is not none %}
+    retry_max = {{ nomad__server_retry_max | int }}
+{% endif %}
+{% if nomad__server_start_join %}
+    start_join = {{ nomad__server_start_join | to_json }}
+{% endif %}
+  }
+
+{% endif %}
   default_scheduler_config {
     scheduler_algorithm = "{{ nomad__server_scheduler_scheduler_algorithm }}"
     memory_oversubscription_enabled = {{ nomad__server_scheduler_memory_oversubscription_enabled | bool | to_json }}
@@ -14,4 +127,23 @@ server {
       sysbatch_scheduler_enabled = {{ nomad__server_scheduler_preemp_sysbatch_scheduler_enabled | bool | to_json }}
     }
   }
+}
+
+autopilot {
+  cleanup_dead_servers = {{ nomad__autopilot_cleanup_dead_servers | bool | to_json }}
+{% if nomad__autopilot_last_contact_threshold is not none %}
+  last_contact_threshold = "{{ nomad__autopilot_last_contact_threshold }}"
+{% endif %}
+{% if nomad__autopilot_max_trailing_logs is not none %}
+  max_trailing_logs = {{ nomad__autopilot_max_trailing_logs | int }}
+{% endif %}
+{% if nomad__autopilot_min_quorum is not none %}
+  min_quorum = {{ nomad__autopilot_min_quorum | int }}
+{% endif %}
+{% if nomad__autopilot_server_stabilization_time is not none %}
+  server_stabilization_time = "{{ nomad__autopilot_server_stabilization_time }}"
+{% endif %}
+  enable_redundancy_zones = {{ nomad__autopilot_enable_redundancy_zones | bool | to_json }}
+  disable_upgrade_migration = {{ nomad__autopilot_disable_upgrade_migration | bool | to_json }}
+  enable_custom_upgrades = {{ nomad__autopilot_enable_custom_upgrades | bool | to_json }}
 }
