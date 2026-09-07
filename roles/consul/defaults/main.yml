@@ -228,6 +228,21 @@ consul__servers: |
   {{ _consul__servers }}
 
 consul__env_content: ""
+# Written to consul.env alongside consul__env_content, e.g. CONSUL_LICENSE.
+consul__environment: {}
+
+# systemd drop-in over the unit that ships with the package, so upgrades keep
+# their own unit file. Empty options are omitted from the drop-in.
+consul__systemd_limit_nofile: 65536
+consul__systemd_limit_nproc: null
+consul__systemd_restart: null
+consul__systemd_restart_sec: null
+consul__systemd_oom_score_adjust: null
+consul__systemd_timeout_stop_sec: null
+consul__systemd_wants: []
+consul__systemd_after: []
+consul__systemd_extra_unit_options: []
+consul__systemd_extra_service_options: []
 
 # Telemetry, see
 # https://developer.hashicorp.com/consul/docs/agent/config/config-files#telemetry

@@ -1,0 +1,34 @@
+# {{ ansible_managed }}
+[Unit]
+{% for unit in consul__systemd_wants %}
+Wants={{ unit }}
+{% endfor %}
+{% for unit in consul__systemd_after %}
+After={{ unit }}
+{% endfor %}
+{% for option in consul__systemd_extra_unit_options %}
+{{ option }}
+{% endfor %}
+
+[Service]
+{% if consul__systemd_limit_nofile is not none %}
+LimitNOFILE={{ consul__systemd_limit_nofile }}
+{% endif %}
+{% if consul__systemd_limit_nproc is not none %}
+LimitNPROC={{ consul__systemd_limit_nproc }}
+{% endif %}
+{% if consul__systemd_restart is not none %}
+Restart={{ consul__systemd_restart }}
+{% endif %}
+{% if consul__systemd_restart_sec is not none %}
+RestartSec={{ consul__systemd_restart_sec }}
+{% endif %}
+{% if consul__systemd_oom_score_adjust is not none %}
+OOMScoreAdjust={{ consul__systemd_oom_score_adjust }}
+{% endif %}
+{% if consul__systemd_timeout_stop_sec is not none %}
+TimeoutStopSec={{ consul__systemd_timeout_stop_sec }}
+{% endif %}
+{% for option in consul__systemd_extra_service_options %}
+{{ option }}
+{% endfor %}

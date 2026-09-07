@@ -55,9 +55,30 @@
   no_log: true
   notify: restart consul
 
+- name: Ensure systemd drop-in directory exists
+  file:
+    path: /etc/systemd/system/consul.service.d
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+
+- name: Configure systemd drop-in
+  template:
+    src: consul_systemd_override.conf.j2
+    dest: /etc/systemd/system/consul.service.d/override.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart consul
+
 - name: Setup consul.env
   copy:
-    content: "{{ consul__env_content }}"
+    content: |
+      {% for key, value in consul__environment.items() %}
+      {{ key }}={{ value }}
+      {% endfor %}
+      {{ consul__env_content }}
     dest: "{{ consul__config_path }}/consul.env"
     owner: "{{ consul__config_owner }}"
     group: "{{ consul__config_group }}"
@@ -133,6 +154,7 @@
     name: consul
     state: started
     enabled: true
+    daemon_reload: true
 
 - name: Run handlers
   meta: flush_handlers
