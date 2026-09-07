@@ -11,7 +11,7 @@ jobs:
       run:
         working-directory: ansible_collections/ngine_io/hashi
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
       with:
         path: ansible_collections/ngine_io/hashi
     - name: Set up Python
