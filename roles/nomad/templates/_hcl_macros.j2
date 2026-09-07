@@ -1,0 +1,17 @@
+{#
+  Renders a (possibly nested) mapping as an HCL body.
+
+  Scalars and lists go through to_json, which happens to be valid HCL for
+  strings, numbers, booleans and arrays. Nested mappings become HCL blocks.
+#}
+{% macro hcl_body(data, indent=2) %}
+{% for key, value in data.items() %}
+{% if value is mapping %}
+{{ ' ' * indent }}{{ key }} {
+{{ hcl_body(value, indent + 2) -}}
+{{ ' ' * indent }}}
+{% else %}
+{{ ' ' * indent }}{{ key }} = {{ value | to_json }}
+{% endif %}
+{% endfor %}
+{% endmacro %}

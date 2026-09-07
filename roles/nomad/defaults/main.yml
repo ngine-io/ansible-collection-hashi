@@ -377,9 +377,68 @@ nomad__client_host_networks: []
   # - name: public
   #   cidr: "203.0.113.0/24"
 
-## Plugins configs
+## Task driver plugins
+# See https://developer.hashicorp.com/nomad/plugins/drivers
+
 # docker
+nomad__client_plugin_docker_enabled: true
+nomad__client_plugin_docker_endpoint: null
 nomad__client_plugin_docker_allow_privileged: false
+nomad__client_plugin_docker_allow_caps: []
+nomad__client_plugin_docker_allow_runtimes: []
 nomad__client_plugin_docker_volume_enabled: false
+nomad__client_plugin_docker_volume_selinuxlabel: null
+nomad__client_plugin_docker_auth_config: /root/.docker/config.json
+nomad__client_plugin_docker_auth_helper: null
+nomad__client_plugin_docker_extra_labels:
+  - job_name
+  - job_id
+  - task_group_name
+  - task_name
+  - namespace
+  - node_name
+  - node_id
+nomad__client_plugin_docker_infra_image: null
+nomad__client_plugin_docker_pull_activity_timeout: null
+nomad__client_plugin_docker_disable_log_collection: false
+nomad__client_plugin_docker_nvidia_runtime: null
+# Image and container garbage collection
+nomad__client_plugin_docker_gc_image: true
+nomad__client_plugin_docker_gc_image_delay: null
+nomad__client_plugin_docker_gc_container: true
+nomad__client_plugin_docker_gc_dangling_containers_enabled: true
+nomad__client_plugin_docker_gc_dangling_containers_dry_run: false
+nomad__client_plugin_docker_gc_dangling_containers_period: null
+nomad__client_plugin_docker_gc_dangling_containers_creation_grace: null
+# Merged into the docker config block for anything not listed above.
+nomad__client_plugin_docker_extra_config: {}
+
+# exec
+nomad__client_plugin_exec_enabled: false
+nomad__client_plugin_exec_default_pid_mode: null
+nomad__client_plugin_exec_default_ipc_mode: null
+nomad__client_plugin_exec_allow_caps: []
+nomad__client_plugin_exec_denied_host_uids: null
+nomad__client_plugin_exec_denied_host_gids: null
+
+# java
+nomad__client_plugin_java_enabled: false
+nomad__client_plugin_java_default_pid_mode: null
+nomad__client_plugin_java_default_ipc_mode: null
+nomad__client_plugin_java_allow_caps: []
+
 # raw_exec
 nomad__client_plugin_raw_exec_enabled: false
+nomad__client_plugin_raw_exec_no_cgroups: false
+nomad__client_plugin_raw_exec_denied_host_uids: null
+nomad__client_plugin_raw_exec_denied_host_gids: null
+
+# Any other plugin, keyed by plugin name. The value is rendered as its
+# config block, nested mappings become nested blocks.
+#
+# nomad__client_plugins:
+#   nomad-driver-podman:
+#     socket_path: "unix:///run/podman/podman.sock"
+#     volumes:
+#       enabled: true
+nomad__client_plugins: {}

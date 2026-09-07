@@ -1,3 +1,4 @@
+{% from "_hcl_macros.j2" import hcl_body %}
 # {{ ansible_managed }}
 # https://developer.hashicorp.com/nomad/docs/configuration/client
 client {
@@ -228,25 +229,142 @@ client {
 {% block nomad__client_plugins %}
 
 {% block nomad__client_plugin_docker %}
+{% if nomad__client_plugin_docker_enabled | bool %}
 plugin "docker" {
   config {
+{% if nomad__client_plugin_docker_endpoint is not none %}
+    endpoint = "{{ nomad__client_plugin_docker_endpoint }}"
+{% endif %}
     allow_privileged = {{ nomad__client_plugin_docker_allow_privileged | bool | to_json }}
-    extra_labels = ["job_name", "job_id", "task_group_name", "task_name", "namespace", "node_name", "node_id"]
+{% if nomad__client_plugin_docker_allow_caps %}
+    allow_caps = {{ nomad__client_plugin_docker_allow_caps | to_json }}
+{% endif %}
+{% if nomad__client_plugin_docker_allow_runtimes %}
+    allow_runtimes = {{ nomad__client_plugin_docker_allow_runtimes | to_json }}
+{% endif %}
+{% if nomad__client_plugin_docker_extra_labels %}
+    extra_labels = {{ nomad__client_plugin_docker_extra_labels | to_json }}
+{% endif %}
+{% if nomad__client_plugin_docker_infra_image is not none %}
+    infra_image = "{{ nomad__client_plugin_docker_infra_image }}"
+{% endif %}
+{% if nomad__client_plugin_docker_pull_activity_timeout is not none %}
+    pull_activity_timeout = "{{ nomad__client_plugin_docker_pull_activity_timeout }}"
+{% endif %}
+{% if nomad__client_plugin_docker_nvidia_runtime is not none %}
+    nvidia_runtime = "{{ nomad__client_plugin_docker_nvidia_runtime }}"
+{% endif %}
+    disable_log_collection = {{ nomad__client_plugin_docker_disable_log_collection | bool | to_json }}
+
+{% if nomad__client_plugin_docker_auth_config is not none or nomad__client_plugin_docker_auth_helper is not none %}
     auth {
-      config = "/root/.docker/config.json"
+{% if nomad__client_plugin_docker_auth_config is not none %}
+      config = "{{ nomad__client_plugin_docker_auth_config }}"
+{% endif %}
+{% if nomad__client_plugin_docker_auth_helper is not none %}
+      helper = "{{ nomad__client_plugin_docker_auth_helper }}"
+{% endif %}
     }
+
+{% endif %}
     volumes {
       enabled = {{ nomad__client_plugin_docker_volume_enabled | bool | to_json }}
+{% if nomad__client_plugin_docker_volume_selinuxlabel is not none %}
+      selinuxlabel = "{{ nomad__client_plugin_docker_volume_selinuxlabel }}"
+{% endif %}
     }
+
+    gc {
+      image = {{ nomad__client_plugin_docker_gc_image | bool | to_json }}
+{% if nomad__client_plugin_docker_gc_image_delay is not none %}
+      image_delay = "{{ nomad__client_plugin_docker_gc_image_delay }}"
+{% endif %}
+      container = {{ nomad__client_plugin_docker_gc_container | bool | to_json }}
+
+      dangling_containers {
+        enabled = {{ nomad__client_plugin_docker_gc_dangling_containers_enabled | bool | to_json }}
+        dry_run = {{ nomad__client_plugin_docker_gc_dangling_containers_dry_run | bool | to_json }}
+{% if nomad__client_plugin_docker_gc_dangling_containers_period is not none %}
+        period = "{{ nomad__client_plugin_docker_gc_dangling_containers_period }}"
+{% endif %}
+{% if nomad__client_plugin_docker_gc_dangling_containers_creation_grace is not none %}
+        creation_grace = "{{ nomad__client_plugin_docker_gc_dangling_containers_creation_grace }}"
+{% endif %}
+      }
+    }
+{% if nomad__client_plugin_docker_extra_config %}
+{{ hcl_body(nomad__client_plugin_docker_extra_config, 4) }}
+{% endif %}
   }
 }
+{% endif %}
+{% endblock %}
+
+{% block nomad__client_plugin_exec %}
+{% if nomad__client_plugin_exec_enabled | bool %}
+plugin "exec" {
+  config {
+{% if nomad__client_plugin_exec_default_pid_mode is not none %}
+    default_pid_mode = "{{ nomad__client_plugin_exec_default_pid_mode }}"
+{% endif %}
+{% if nomad__client_plugin_exec_default_ipc_mode is not none %}
+    default_ipc_mode = "{{ nomad__client_plugin_exec_default_ipc_mode }}"
+{% endif %}
+{% if nomad__client_plugin_exec_allow_caps %}
+    allow_caps = {{ nomad__client_plugin_exec_allow_caps | to_json }}
+{% endif %}
+{% if nomad__client_plugin_exec_denied_host_uids is not none %}
+    denied_host_uids = "{{ nomad__client_plugin_exec_denied_host_uids }}"
+{% endif %}
+{% if nomad__client_plugin_exec_denied_host_gids is not none %}
+    denied_host_gids = "{{ nomad__client_plugin_exec_denied_host_gids }}"
+{% endif %}
+  }
+}
+{% endif %}
+{% endblock %}
+
+{% block nomad__client_plugin_java %}
+{% if nomad__client_plugin_java_enabled | bool %}
+plugin "java" {
+  config {
+{% if nomad__client_plugin_java_default_pid_mode is not none %}
+    default_pid_mode = "{{ nomad__client_plugin_java_default_pid_mode }}"
+{% endif %}
+{% if nomad__client_plugin_java_default_ipc_mode is not none %}
+    default_ipc_mode = "{{ nomad__client_plugin_java_default_ipc_mode }}"
+{% endif %}
+{% if nomad__client_plugin_java_allow_caps %}
+    allow_caps = {{ nomad__client_plugin_java_allow_caps | to_json }}
+{% endif %}
+  }
+}
+{% endif %}
 {% endblock %}
 
 {% block nomad__client_plugin_raw_exec %}
 plugin "raw_exec" {
   config {
     enabled = {{ nomad__client_plugin_raw_exec_enabled | bool | to_json }}
+    no_cgroups = {{ nomad__client_plugin_raw_exec_no_cgroups | bool | to_json }}
+{% if nomad__client_plugin_raw_exec_denied_host_uids is not none %}
+    denied_host_uids = "{{ nomad__client_plugin_raw_exec_denied_host_uids }}"
+{% endif %}
+{% if nomad__client_plugin_raw_exec_denied_host_gids is not none %}
+    denied_host_gids = "{{ nomad__client_plugin_raw_exec_denied_host_gids }}"
+{% endif %}
   }
 }
+{% endblock %}
+
+{% block nomad__client_plugin_extra %}
+{% for plugin_name, plugin_config in nomad__client_plugins.items() %}
+
+plugin "{{ plugin_name }}" {
+  config {
+{{ hcl_body(plugin_config, 4) }}
+  }
+}
+{% endfor %}
 {% endblock %}
 {% endblock %}
