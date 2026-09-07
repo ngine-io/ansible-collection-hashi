@@ -102,6 +102,56 @@ nomad__roles:
       tags: nomad_job
 ```
 
+### Configuration
+
+Every option of the Nomad and Consul agents is reachable from the inventory.
+The variables are named after the stanza they belong to, and are documented
+inline in each role's `defaults/main.yml`:
+
+| Role | Variables | Reference |
+| --- | --- | --- |
+| `consul` | `consul__*` | [roles/consul/README.md](roles/consul/README.md) |
+| `nomad` | `nomad__*`, `nomad__server_*`, `nomad__client_*` | [roles/nomad/README.md](roles/nomad/README.md) |
+
+Two rules hold throughout:
+
+- An option that defaults to `null` is left out of the rendered config, so
+  the agent's own default applies. The roles only deviate from an upstream
+  default where it is called out in the role README.
+- Anything a role does not model explicitly goes into `nomad__extra_config`
+  or `consul__extra_config`. Both take an arbitrary mapping and are written
+  as JSON next to the HCL, which the agents merge.
+
+Both roles validate the rendered configuration before any restart handler
+fires, so a mistake in the inventory fails the play rather than leaving a
+crash looping agent behind.
+
+### A hardened cluster
+
+The defaults are open: no TLS, no ACLs, no gossip encryption. Turning that
+around is roughly:
+
+```yaml
+# file: ./group_vars/nomad.yml
+consul__encrypt: "{{ vault_consul_gossip_key }}"
+consul__tls_enabled: true
+consul__auto_encrypt_enabled: true
+consul__tls_ca_content: "{{ vault_consul_ca }}"
+consul__acl_enabled: true
+consul__acl_token_agent: "{{ vault_consul_agent_token }}"
+
+nomad__server_encrypt: "{{ vault_nomad_gossip_key }}"
+nomad__tls_enabled: true
+nomad__tls_ca_content: "{{ vault_nomad_ca }}"
+nomad__tls_cert_content: "{{ vault_nomad_cert }}"
+nomad__tls_key_content: "{{ vault_nomad_key }}"
+nomad__acl_enabled: true
+```
+
+Each of the three steps is a rolling change of its own; see the role READMEs
+for the ordering, in particular `nomad__tls_rpc_upgrade_mode` and
+`consul__encrypt_verify_incoming`.
+
 ### Upgrading a Nomad cluster
 
 ```yaml
