@@ -18,7 +18,7 @@
     path: "{{ consul__data_dir }}"
     owner: "{{ consul__config_owner }}"
     group: "{{ consul__config_group }}"
-    mode: 0700
+    mode: "0700"
     state: directory
 
 - name: Ensure TLS directory exists
@@ -60,7 +60,7 @@
     path: /etc/systemd/system/consul.service.d
     owner: root
     group: root
-    mode: 0755
+    mode: "0755"
     state: directory
 
 - name: Configure systemd drop-in
@@ -69,7 +69,7 @@
     dest: /etc/systemd/system/consul.service.d/override.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify: Restart consul
 
 - name: Setup consul.env

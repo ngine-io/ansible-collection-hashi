@@ -3,6 +3,9 @@
   ansible.builtin.get_url:
     url: https://apt.releases.hashicorp.com/gpg
     dest: /etc/apt/trusted.gpg.d/hashicorp-archive-keyring.asc
+    owner: root
+    group: root
+    mode: "0644"
 
 - name: Add Hashicorp apt repository
   ansible.builtin.apt_repository:

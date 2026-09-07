@@ -33,7 +33,7 @@
     dest: /etc/systemd/system/nomad.service
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   notify:
     - Restart nomad
 
@@ -116,7 +116,7 @@
 - name: Create host volumes
   ansible.builtin.file:
     path: "{{ nomad__client_host_volume_basepath + item.path }}"
-    mode: 0777
+    mode: "0777"
     state: directory
   with_items: "{{ nomad__client_host_volumes }}"
 
@@ -178,7 +178,7 @@
     path: "{{ nomad__data_path }}"
     owner: root
     group: root
-    mode: 0700
+    mode: "0700"
     state: directory
 
 # Runs before the handlers so a broken configuration fails the play instead of
