@@ -1,5 +1,16 @@
 ---
 consul__package: "consul"
+# Pin to an exact package version, e.g. "1.19.2-1". Null tracks the repository.
+consul__version: null
+
+# The packaged unit runs the agent as the consul user, so the config has to be
+# readable by it. It holds the gossip key and ACL tokens, hence 0640.
+consul__config_owner: consul
+consul__config_group: consul
+consul__config_file_mode: "0640"
+consul__config_dir_mode: "0750"
+
+consul__config_validate: true
 consul__datacenter: "{{ hashi_common__datacenter }}"
 consul__domain: consul
 consul__role: server
