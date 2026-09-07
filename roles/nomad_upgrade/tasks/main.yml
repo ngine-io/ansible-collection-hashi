@@ -12,11 +12,24 @@
   check_mode: true
   register: updates_available
 
+- name: Ensure Nomad eligibility enabled if unchanged
+  when: updates_available is not changed
+  command: nomad node eligibility -self -enable
+  register: eligibility_node
+  until: eligibility_node.rc == 0
+  retries: 5
+  delay: 10
+  change_when: false
+
 - name: Process package updates
   when: updates_available is changed
   block:
     - name: Nomad drain node
       command: nomad node drain -self -enable
+      register: drain_node
+      until: drain_node.rc == 0
+      retries: 5
+      delay: 10
 
     - name: Update all packages to their latest version
       ansible.builtin.package:
@@ -29,6 +42,10 @@
 
     - name: Nomad eligibility enable node
       command: nomad node eligibility -self -enable
+      register: eligibility_node
+      until: eligibility_node.rc == 0
+      retries: 5
+      delay: 10
 
     - name: Pause for some time
       ansible.builtin.pause:
