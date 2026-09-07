@@ -442,3 +442,22 @@ nomad__client_plugin_raw_exec_denied_host_gids: null
 #     volumes:
 #       enabled: true
 nomad__client_plugins: {}
+
+# Escape hatch for anything this role does not model explicitly, including
+# enterprise only stanzas. Nomad reads JSON and HCL from the config directory
+# and merges both, so the mapping below is written as JSON and needs no HCL
+# quoting rules.
+#
+# nomad__extra_config:
+#   audit:
+#     enabled: true
+#     sink:
+#       file:
+#         type: file
+#         format: json
+nomad__extra_config: {}
+
+# Verbatim HCL fragments, keyed by file name. Use when ordering or HCL only
+# syntax matters. Rendered as Jinja templates from the playbook's templates
+# directory is not supported here on purpose: pass the content directly.
+nomad__extra_config_files: {}

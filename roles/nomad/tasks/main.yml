@@ -125,6 +125,40 @@
   notify:
     - restart nomad
 
+# Nomad merges every .hcl and .json file in the config directory. The zz-
+# prefix keeps these last so they win over what the role renders.
+- name: Configure extra config
+  copy:
+    content: "{{ nomad__extra_config | to_nice_json(indent=2) }}\n"
+    dest: "{{ nomad__config_path }}/zz-extra.json"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_file_mode }}"
+  when: nomad__extra_config
+  notify:
+    - restart nomad
+
+- name: Remove extra config
+  file:
+    path: "{{ nomad__config_path }}/zz-extra.json"
+    state: absent
+  when: not nomad__extra_config
+  notify:
+    - restart nomad
+
+- name: Configure extra config files
+  copy:
+    content: "{{ item.value }}"
+    dest: "{{ nomad__config_path }}/{{ item.key }}"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_file_mode }}"
+  loop: "{{ nomad__extra_config_files | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  notify:
+    - restart nomad
+
 - name: Ensure data directory exists
   file:
     path: "{{ nomad__data_path }}"
