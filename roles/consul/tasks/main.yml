@@ -1,12 +1,12 @@
 ---
 - name: Install
-  package:
+  ansible.builtin.package:
     name: "{{ consul__package_spec }}"
   notify:
     - restart consul
 
 - name: Ensure config directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ consul__config_path }}"
     owner: "{{ consul__config_owner }}"
     group: "{{ consul__config_group }}"
@@ -14,7 +14,7 @@
     state: directory
 
 - name: Ensure data directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ consul__data_dir }}"
     owner: "{{ consul__config_owner }}"
     group: "{{ consul__config_group }}"
@@ -22,7 +22,7 @@
     state: directory
 
 - name: Ensure TLS directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ consul__tls_path }}"
     owner: "{{ consul__config_owner }}"
     group: "{{ consul__config_group }}"
@@ -31,7 +31,7 @@
   when: consul__tls_enabled | bool
 
 - name: Configure TLS material
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ item.dest }}"
     owner: "{{ consul__config_owner }}"
@@ -56,7 +56,7 @@
   notify: restart consul
 
 - name: Ensure systemd drop-in directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/consul.service.d
     owner: root
     group: root
@@ -64,7 +64,7 @@
     state: directory
 
 - name: Configure systemd drop-in
-  template:
+  ansible.builtin.template:
     src: consul_systemd_override.conf.j2
     dest: /etc/systemd/system/consul.service.d/override.conf
     owner: root
@@ -73,7 +73,7 @@
   notify: restart consul
 
 - name: Setup consul.env
-  copy:
+  ansible.builtin.copy:
     content: |
       {% for key, value in consul__environment.items() %}
       {{ key }}={{ value }}
@@ -86,7 +86,7 @@
   notify: restart consul
 
 - name: Configure
-  template:
+  ansible.builtin.template:
     src: consul.hcl.j2
     dest: "{{ consul__config_path }}/consul.hcl"
     owner: "{{ consul__config_owner }}"
@@ -97,7 +97,7 @@
 # Consul merges every .hcl and .json file in the config directory. The zz-
 # prefix keeps these last so they win over what the role renders.
 - name: Configure services, checks and watches
-  copy:
+  ansible.builtin.copy:
     content: "{{ {'services': consul__services, 'checks': consul__checks, 'watches': consul__watches} | to_nice_json(indent=2) }}\n"
     dest: "{{ consul__config_path }}/zz-services.json"
     owner: "{{ consul__config_owner }}"
@@ -107,14 +107,14 @@
   notify: restart consul
 
 - name: Remove services, checks and watches
-  file:
+  ansible.builtin.file:
     path: "{{ consul__config_path }}/zz-services.json"
     state: absent
   when: not (consul__services or consul__checks or consul__watches)
   notify: restart consul
 
 - name: Configure extra config
-  copy:
+  ansible.builtin.copy:
     content: "{{ consul__extra_config | to_nice_json(indent=2) }}\n"
     dest: "{{ consul__config_path }}/zz-extra.json"
     owner: "{{ consul__config_owner }}"
@@ -124,14 +124,14 @@
   notify: restart consul
 
 - name: Remove extra config
-  file:
+  ansible.builtin.file:
     path: "{{ consul__config_path }}/zz-extra.json"
     state: absent
   when: not consul__extra_config
   notify: restart consul
 
 - name: Configure extra config files
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.value }}"
     dest: "{{ consul__config_path }}/{{ item.key }}"
     owner: "{{ consul__config_owner }}"
@@ -143,18 +143,18 @@
   notify: restart consul
 
 - name: Validate consul config
-  command: consul validate "{{ consul__config_path }}/"
+  ansible.builtin.command: consul validate "{{ consul__config_path }}/"
   changed_when: false
   when:
     - consul__config_validate | bool
     - not ansible_check_mode
 
 - name: Ensure service is running
-  systemd:
+  ansible.builtin.systemd:
     name: consul
     state: started
     enabled: true
     daemon_reload: true
 
 - name: Run handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers

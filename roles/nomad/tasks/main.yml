@@ -1,12 +1,12 @@
 ---
 - name: Install
-  package:
+  ansible.builtin.package:
     name: "{{ [nomad__package_spec] + nomad__extra_packages }}"
   notify:
     - restart nomad
 
 - name: Ensure config directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ nomad__config_path }}"
     owner: "{{ nomad__config_owner }}"
     group: "{{ nomad__config_group }}"
@@ -14,7 +14,7 @@
     state: directory
 
 - name: Setup nomad.env
-  copy:
+  ansible.builtin.copy:
     content: |
       {% for key, value in nomad__environment.items() %}
       {{ key }}={{ value }}
@@ -28,7 +28,7 @@
     - restart nomad
 
 - name: Configure unit file for systemd
-  template:
+  ansible.builtin.template:
     src: nomad_systemd.service.j2
     dest: /etc/systemd/system/nomad.service
     owner: root
@@ -38,7 +38,7 @@
     - restart nomad
 
 - name: Configure sysctl for bridge networking
-  sysctl:
+  ansible.builtin.sysctl:
     name: "{{ item }}"
     value: '1'
   with_items:
@@ -50,7 +50,7 @@
   ignore_errors: true
 
 - name: Ensure TLS directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ nomad__tls_path }}"
     owner: "{{ nomad__config_owner }}"
     group: "{{ nomad__config_group }}"
@@ -59,7 +59,7 @@
   when: nomad__tls_enabled | bool
 
 - name: Configure TLS material
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.content }}"
     dest: "{{ item.dest }}"
     owner: "{{ nomad__config_owner }}"
@@ -85,7 +85,7 @@
     - restart nomad
 
 - name: Configure base config
-  template:
+  ansible.builtin.template:
     src: nomad.hcl.j2
     dest: "{{ nomad__config_path }}/nomad.hcl"
     owner: "{{ nomad__config_owner }}"
@@ -95,7 +95,7 @@
     - restart nomad
 
 - name: Configure server
-  template:
+  ansible.builtin.template:
     src: server.hcl.j2
     dest: "{{ nomad__config_path }}/server.hcl"
     owner: "{{ nomad__config_owner }}"
@@ -106,7 +106,7 @@
     - restart nomad
 
 - name: Remove server config
-  file:
+  ansible.builtin.file:
     path: "{{ nomad__config_path }}/server.hcl"
     state: absent
   when: "'server' not in nomad__roles"
@@ -114,14 +114,14 @@
     - restart nomad
 
 - name: Create host volumes
-  file:
+  ansible.builtin.file:
     path: "{{ nomad__client_host_volume_basepath + item.path }}"
     mode: 0777
     state: directory
   with_items: "{{ nomad__client_host_volumes }}"
 
 - name: Configure client
-  template:
+  ansible.builtin.template:
     src: client.hcl.j2
     dest: "{{ nomad__config_path }}/client.hcl"
     owner: "{{ nomad__config_owner }}"
@@ -132,7 +132,7 @@
     - restart nomad
 
 - name: Remove client config
-  file:
+  ansible.builtin.file:
     path: "{{ nomad__config_path }}/client.hcl"
     state: absent
   when: "'client' not in nomad__roles"
@@ -142,7 +142,7 @@
 # Nomad merges every .hcl and .json file in the config directory. The zz-
 # prefix keeps these last so they win over what the role renders.
 - name: Configure extra config
-  copy:
+  ansible.builtin.copy:
     content: "{{ nomad__extra_config | to_nice_json(indent=2) }}\n"
     dest: "{{ nomad__config_path }}/zz-extra.json"
     owner: "{{ nomad__config_owner }}"
@@ -153,7 +153,7 @@
     - restart nomad
 
 - name: Remove extra config
-  file:
+  ansible.builtin.file:
     path: "{{ nomad__config_path }}/zz-extra.json"
     state: absent
   when: not nomad__extra_config
@@ -161,7 +161,7 @@
     - restart nomad
 
 - name: Configure extra config files
-  copy:
+  ansible.builtin.copy:
     content: "{{ item.value }}"
     dest: "{{ nomad__config_path }}/{{ item.key }}"
     owner: "{{ nomad__config_owner }}"
@@ -174,7 +174,7 @@
     - restart nomad
 
 - name: Ensure data directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ nomad__data_path }}"
     owner: root
     group: root
@@ -184,23 +184,23 @@
 # Runs before the handlers so a broken configuration fails the play instead of
 # restarting the agent into a crash loop.
 - name: Validate config
-  command: nomad config validate "{{ nomad__config_path }}"
+  ansible.builtin.command: nomad config validate "{{ nomad__config_path }}"
   changed_when: false
   when:
     - nomad__config_validate | bool
     - not ansible_check_mode
 
 - name: Ensure service is running
-  systemd:
+  ansible.builtin.systemd:
     name: nomad
     state: started
     enabled: true
     daemon_reload: true
 
 - name: Run handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: Wait for http port
-  wait_for:
+  ansible.builtin.wait_for:
     port: "{{ nomad__port_http }}"
   when: not ansible_check_mode

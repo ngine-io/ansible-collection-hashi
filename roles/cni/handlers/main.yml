@@ -1,4 +1,4 @@
 ---
 - name: event CNI changed
-  debug:
+  ansible.builtin.debug:
     msg: CNI changed

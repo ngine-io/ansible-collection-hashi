@@ -1,6 +1,6 @@
 ---
 - name: Add repository
-  yum_repository:
+  ansible.builtin.yum_repository:
     name: hashicorp
     description: Hashicorp Repo
     baseurl: "{{ hashi_common__rpm_repo }}"
