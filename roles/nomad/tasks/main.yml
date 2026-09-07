@@ -55,7 +55,7 @@
   when: "'client' in nomad__roles"
 
 - name: Configure sysctl for bridge networking
-  ansible.builtin.sysctl:
+  ansible.posix.sysctl:
     name: "{{ item }}"
     value: "1"
     sysctl_file: "{{ nomad__sysctl_file }}"
