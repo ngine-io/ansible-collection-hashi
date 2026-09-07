@@ -5,6 +5,28 @@
   notify:
     - restart nomad
 
+- name: Ensure config directory exists
+  file:
+    path: "{{ nomad__config_path }}"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_dir_mode }}"
+    state: directory
+
+- name: Setup nomad.env
+  copy:
+    content: |
+      {% for key, value in nomad__environment.items() %}
+      {{ key }}={{ value }}
+      {% endfor %}
+      {{ nomad__env_content }}
+    dest: "{{ nomad__config_path }}/nomad.env"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_file_mode }}"
+  notify:
+    - restart nomad
+
 - name: Configure unit file for systemd
   template:
     src: nomad_systemd.service.j2
@@ -26,14 +48,6 @@
   when: "'client' in nomad__roles"
   # TODO: Improve check
   ignore_errors: true
-
-- name: Ensure config directory exists
-  file:
-    path: "{{ nomad__config_path }}"
-    owner: "{{ nomad__config_owner }}"
-    group: "{{ nomad__config_group }}"
-    mode: "{{ nomad__config_dir_mode }}"
-    state: directory
 
 - name: Ensure TLS directory exists
   file:

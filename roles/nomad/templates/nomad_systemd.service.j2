@@ -9,25 +9,42 @@ After=network-online.target
 Wants=consul.service
 After=consul.service
 {% endif %}
-
 {% if nomad__use_vault %}
 Wants=vault.service
 After=vault.service
 {% endif %}
+{% for unit in nomad__systemd_wants %}
+Wants={{ unit }}
+{% endfor %}
+{% for unit in nomad__systemd_after %}
+After={{ unit }}
+{% endfor %}
+{% for option in nomad__systemd_extra_unit_options %}
+{{ option }}
+{% endfor %}
 
 [Service]
+User={{ nomad__systemd_user }}
+Group={{ nomad__systemd_group }}
+EnvironmentFile=-{{ nomad__config_path }}/nomad.env
 ExecReload=/bin/kill -HUP $MAINPID
-ExecStart=/usr/bin/nomad agent -config /etc/nomad.d
-KillMode=process
-KillSignal=SIGINT
-LimitNOFILE=65536
-LimitNPROC=infinity
-Restart=on-failure
-RestartSec=20
+ExecStart=/usr/bin/nomad agent -config {{ nomad__config_path }}{{ (' ' ~ nomad__systemd_exec_start_extra_args | join(' ')) if nomad__systemd_exec_start_extra_args else '' }}
+KillMode={{ nomad__systemd_kill_mode }}
+KillSignal={{ nomad__systemd_kill_signal }}
+LimitNOFILE={{ nomad__systemd_limit_nofile }}
+LimitNPROC={{ nomad__systemd_limit_nproc }}
+Restart={{ nomad__systemd_restart }}
+RestartSec={{ nomad__systemd_restart_sec }}
 StartLimitInterval=200
 StartLimitBurst=5
-TasksMax=infinity
-OOMScoreAdjust=-1000
+TasksMax={{ nomad__systemd_tasks_max }}
+OOMScoreAdjust={{ nomad__systemd_oom_score_adjust }}
+{% if nomad__systemd_timeout_stop_sec is not none %}
+TimeoutStopSec={{ nomad__systemd_timeout_stop_sec }}
+{% endif %}
+{% for option in nomad__systemd_extra_service_options %}
+{{ option }}
+{% endfor %}
 
 [Install]
 WantedBy=multi-user.target

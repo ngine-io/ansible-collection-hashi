@@ -15,6 +15,33 @@ nomad__config_dir_mode: "0700"
 
 # Run "nomad config validate" before any restart is triggered.
 nomad__config_validate: true
+
+# systemd unit. A client needs root for cgroups and the exec driver; a
+# server only node can run unprivileged.
+nomad__systemd_user: root
+nomad__systemd_group: root
+nomad__systemd_exec_start_extra_args: []
+nomad__systemd_limit_nofile: 65536
+nomad__systemd_limit_nproc: infinity
+nomad__systemd_tasks_max: infinity
+nomad__systemd_restart: on-failure
+nomad__systemd_restart_sec: 20
+nomad__systemd_oom_score_adjust: -1000
+nomad__systemd_kill_mode: process
+nomad__systemd_kill_signal: SIGINT
+# Give a draining client time to hand its allocations over before systemd
+# gives up. Raise this together with nomad__client_drain_on_shutdown_enabled.
+nomad__systemd_timeout_stop_sec: null
+nomad__systemd_extra_unit_options: []
+nomad__systemd_extra_service_options: []
+# Ordering, for units this agent depends on, e.g. a mount or docker.service.
+nomad__systemd_wants: []
+nomad__systemd_after: []
+
+# Environment file sourced by the unit. Useful for NOMAD_LICENSE or proxy
+# settings that must not end up in the HCL.
+nomad__environment: {}
+nomad__env_content: ""
 nomad__node_name: "{{ inventory_hostname_short }}"
 nomad__log_level: INFO
 nomad__data_path: /opt/nomad/data
