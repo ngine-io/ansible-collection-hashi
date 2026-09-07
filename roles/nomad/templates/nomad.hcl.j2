@@ -178,6 +178,56 @@ consul {
 }
 
 {% endif %}
+{% if nomad__use_vault %}
+vault {
+  enabled = true
+  address = "{{ nomad__vault_address }}"
+{% if nomad__vault_namespace is not none %}
+  namespace = "{{ nomad__vault_namespace }}"
+{% endif %}
+{% if nomad__vault_token is not none %}
+  token = "{{ nomad__vault_token }}"
+{% endif %}
+{% if nomad__vault_create_from_role is not none %}
+  create_from_role = "{{ nomad__vault_create_from_role }}"
+{% endif %}
+{% if nomad__vault_task_token_ttl is not none %}
+  task_token_ttl = "{{ nomad__vault_task_token_ttl }}"
+{% endif %}
+{% if 'server' in nomad__roles %}
+  allow_unauthenticated = {{ nomad__vault_allow_unauthenticated | bool | to_json }}
+{% endif %}
+{% if nomad__vault_jwt_auth_backend_path is not none %}
+  jwt_auth_backend_path = "{{ nomad__vault_jwt_auth_backend_path }}"
+
+  default_identity {
+    aud = {{ nomad__vault_default_identity_aud | to_json }}
+{% if nomad__vault_default_identity_ttl is not none %}
+    ttl = "{{ nomad__vault_default_identity_ttl }}"
+{% endif %}
+    env = {{ nomad__vault_default_identity_env | bool | to_json }}
+    file = {{ nomad__vault_default_identity_file | bool | to_json }}
+  }
+{% endif %}
+{% if nomad__vault_ca_file is not none %}
+  ca_file = "{{ nomad__vault_ca_file }}"
+{% endif %}
+{% if nomad__vault_ca_path is not none %}
+  ca_path = "{{ nomad__vault_ca_path }}"
+{% endif %}
+{% if nomad__vault_cert_file is not none %}
+  cert_file = "{{ nomad__vault_cert_file }}"
+{% endif %}
+{% if nomad__vault_key_file is not none %}
+  key_file = "{{ nomad__vault_key_file }}"
+{% endif %}
+{% if nomad__vault_tls_server_name is not none %}
+  tls_server_name = "{{ nomad__vault_tls_server_name }}"
+{% endif %}
+  tls_skip_verify = {{ nomad__vault_tls_skip_verify | bool | to_json }}
+}
+
+{% endif %}
 {% if nomad__acl_enabled %}
 acl {
   enabled = true

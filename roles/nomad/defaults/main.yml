@@ -83,6 +83,29 @@ nomad__limits_rpc_max_conns_per_client: null
 # Extra headers returned by the HTTP API, e.g. CORS headers.
 nomad__http_api_response_headers: {}
 
+# Vault integration, see
+# https://developer.hashicorp.com/nomad/docs/configuration/vault
+nomad__use_vault: false
+nomad__vault_address: "https://127.0.0.1:8200"
+nomad__vault_namespace: null
+# Legacy token based integration. Prefer workload identity via
+# nomad__vault_jwt_auth_backend_path and nomad__vault_default_identity_*.
+nomad__vault_token: null
+nomad__vault_create_from_role: null
+nomad__vault_task_token_ttl: null
+nomad__vault_allow_unauthenticated: true
+nomad__vault_jwt_auth_backend_path: null
+nomad__vault_default_identity_aud: []
+nomad__vault_default_identity_ttl: null
+nomad__vault_default_identity_env: true
+nomad__vault_default_identity_file: false
+nomad__vault_ca_file: null
+nomad__vault_ca_path: null
+nomad__vault_cert_file: null
+nomad__vault_key_file: null
+nomad__vault_tls_server_name: null
+nomad__vault_tls_skip_verify: false
+
 # ACLs, see https://developer.hashicorp.com/nomad/docs/configuration/acl
 # Enabling this only turns on enforcement. Bootstrapping the initial
 # management token and writing policies stays a deliberate manual step.

@@ -10,6 +10,11 @@ Wants=consul.service
 After=consul.service
 {% endif %}
 
+{% if nomad__use_vault %}
+Wants=vault.service
+After=vault.service
+{% endif %}
+
 [Service]
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStart=/usr/bin/nomad agent -config /etc/nomad.d
