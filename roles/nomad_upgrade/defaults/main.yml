@@ -9,6 +9,9 @@ nomad_upgrade__package_name: "*"
 nomad_upgrade__is_client: "{{ 'client' in (nomad__roles | default(['client'])) }}"
 
 nomad_upgrade__drain_deadline: 1h
+# How long to wait for the drain to finish. Should be at least as long as the
+# deadline above, otherwise the play gives up while Nomad is still migrating.
+nomad_upgrade__drain_timeout: 3600
 # Migrate system jobs as well. Leaving them running means the node is not
 # really empty when the reboot comes.
 nomad_upgrade__drain_ignore_system_jobs: false
@@ -22,6 +25,11 @@ nomad_upgrade__settle_seconds: 60
 
 nomad_upgrade__retries: 5
 nomad_upgrade__delay: 10
+
+# Voters expected in the raft peer set before the play moves to the next
+# server. Derived from the inventory when the nomad role's variables are in
+# scope, otherwise set it explicitly.
+nomad_upgrade__expected_voters: "{{ nomad__servers | default([]) | count }}"
 
 # API access, needed once the cluster runs with TLS or ACLs.
 nomad_upgrade__nomad_addr: "{{ 'https' if (nomad__tls_enabled | default(false) | bool) else 'http' }}://127.0.0.1:{{ nomad__port_http | default(4646) }}"

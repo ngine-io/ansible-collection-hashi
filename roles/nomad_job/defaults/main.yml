@@ -13,9 +13,6 @@ nomad_job__nomad_cacert: null
 nomad_job__nomad_client_cert: null
 nomad_job__nomad_client_key: null
 
-# Where rendered jobs are written before they are validated and run.
-nomad_job__tmp_path: /tmp
-
 # Variables handed to every job template, merged with the per job vars.
 nomad_job__vars: {}
 
@@ -28,4 +25,7 @@ nomad_job__vars: {}
 #     vars:
 #       replicas: 3
 #     state: present
+#   - name: old-job
+#     state: absent
+#     purge: true
 nomad_job__job_templates: []

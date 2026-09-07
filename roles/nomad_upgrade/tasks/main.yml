@@ -1,11 +1,12 @@
 ---
 - name: Upgrade block
-  environment:
-    NOMAD_ADDR: "{{ nomad_upgrade__nomad_addr }}"
-    NOMAD_TOKEN: "{{ nomad_upgrade__nomad_token | default('', true) }}"
-    NOMAD_CACERT: "{{ nomad_upgrade__nomad_cacert | default('', true) }}"
-    NOMAD_CLIENT_CERT: "{{ nomad_upgrade__nomad_client_cert | default('', true) }}"
-    NOMAD_CLIENT_KEY: "{{ nomad_upgrade__nomad_client_key | default('', true) }}"
+  module_defaults:
+    group/ngine_io.hashi.nomad:
+      url: "{{ nomad_upgrade__nomad_addr }}"
+      token: "{{ nomad_upgrade__nomad_token | default(omit, true) }}"
+      ca_path: "{{ nomad_upgrade__nomad_cacert | default(omit, true) }}"
+      client_cert: "{{ nomad_upgrade__nomad_client_cert | default(omit, true) }}"
+      client_key: "{{ nomad_upgrade__nomad_client_key | default(omit, true) }}"
   block:
     - name: Update package cache for Debian
       ansible.builtin.apt:
@@ -26,12 +27,8 @@
       when:
         - nomad_upgrade__updates_available is not changed
         - nomad_upgrade__is_client | bool
-      ansible.builtin.command: nomad node eligibility -self -enable
-      register: nomad_upgrade__eligibility
-      until: nomad_upgrade__eligibility.rc == 0
-      retries: "{{ nomad_upgrade__retries }}"
-      delay: "{{ nomad_upgrade__delay }}"
-      changed_when: false
+      ngine_io.hashi.nomad_node:
+        eligible: true
 
     # Not a handler: the drain, upgrade and reboot have to run in order
     # within this host's turn of the serial play.
@@ -39,15 +36,12 @@
       when: nomad_upgrade__updates_available is changed
       block:
         - name: Nomad drain node
-          ansible.builtin.command: >
-            nomad node drain -self -enable
-            -deadline {{ nomad_upgrade__drain_deadline }}
-            -ignore-system={{ nomad_upgrade__drain_ignore_system_jobs | bool | lower }}
-          register: nomad_upgrade__drain
-          changed_when: nomad_upgrade__drain.rc == 0
-          until: nomad_upgrade__drain.rc == 0
-          retries: "{{ nomad_upgrade__retries }}"
-          delay: "{{ nomad_upgrade__delay }}"
+          ngine_io.hashi.nomad_node:
+            drain: true
+            drain_deadline: "{{ nomad_upgrade__drain_deadline }}"
+            drain_ignore_system_jobs: "{{ nomad_upgrade__drain_ignore_system_jobs }}"
+            wait: true
+            wait_timeout: "{{ nomad_upgrade__drain_timeout }}"
           when: nomad_upgrade__is_client | bool
 
         - name: Update all packages to their latest version  # noqa: package-latest
@@ -67,33 +61,28 @@
           when: not nomad_upgrade__reboot | bool
 
         - name: Wait for the agent to answer again
-          ansible.builtin.command: nomad agent-info
+          ngine_io.hashi.nomad_agent_info:
           register: nomad_upgrade__agent_info
-          until: nomad_upgrade__agent_info.rc == 0
+          until: nomad_upgrade__agent_info is not failed
           retries: "{{ nomad_upgrade__retries }}"
           delay: "{{ nomad_upgrade__delay }}"
-          changed_when: false
 
+        # This is what makes "serial: 1" safe: without it the play moves to
+        # the next server while this one is still catching up on raft.
         - name: Wait for the server to rejoin the raft peer set
-          ansible.builtin.shell: >
-            set -o pipefail &&
-            nomad operator raft list-peers | grep -c -E '\b(leader|follower)\b'
-          args:
-            executable: /bin/bash
-          register: nomad_upgrade__raft_peers
-          until: nomad_upgrade__raft_peers.rc == 0 and nomad_upgrade__raft_peers.stdout | int >= (nomad__servers | default([]) | count)
+          ngine_io.hashi.nomad_raft_info:
+          register: nomad_upgrade__raft
+          until:
+            - nomad_upgrade__raft is not failed
+            - nomad_upgrade__raft.leader is not none
+            - nomad_upgrade__raft.voters | length >= nomad_upgrade__expected_voters | int
           retries: "{{ nomad_upgrade__retries }}"
           delay: "{{ nomad_upgrade__delay }}"
-          changed_when: false
           when: "'server' in (nomad__roles | default([]))"
 
         - name: Nomad eligibility enable node
-          ansible.builtin.command: nomad node eligibility -self -enable
-          register: nomad_upgrade__eligibility
-          until: nomad_upgrade__eligibility.rc == 0
-          retries: "{{ nomad_upgrade__retries }}"
-          delay: "{{ nomad_upgrade__delay }}"
-          changed_when: false
+          ngine_io.hashi.nomad_node:
+            eligible: true
           when: nomad_upgrade__is_client | bool
 
         - name: Let the rescheduled allocations settle

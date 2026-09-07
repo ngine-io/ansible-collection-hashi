@@ -2,3 +2,12 @@
 # Oldest ansible-core release still supported upstream. The roles use the
 # ansible.builtin FQCN and loop, neither of which works before 2.10 anyway.
 requires_ansible: ">=2.15.0"
+
+# Lets a play set the connection options once with
+# module_defaults: {group/ngine_io.hashi.nomad: {url: ..., token: ...}}
+action_groups:
+  nomad:
+    - nomad_agent_info
+    - nomad_job
+    - nomad_node
+    - nomad_raft_info

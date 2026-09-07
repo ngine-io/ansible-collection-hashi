@@ -42,6 +42,9 @@ jobs:
       - name: Run sanity tests
         run: ansible-test sanity --docker -v --color
 
+      - name: Run unit tests
+        run: ansible-test units --docker -v --color
+
   lint:
     name: Lint and syntax
     defaults:

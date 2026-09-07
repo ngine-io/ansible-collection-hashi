@@ -171,3 +171,49 @@ for the ordering, in particular `nomad__tls_rpc_upgrade_mode` and
     - role: ngine_io.hashi.nomad_upgrade
       tags: nomad
 ```
+
+## Modules
+
+The collection ships modules for the operations the roles used to drive with
+the `nomad` command line. They talk to the Nomad HTTP API, so they support
+check mode and `--diff`, are idempotent, and can run with `delegate_to` from a
+host that has no `nomad` binary.
+
+| Module | Replaces |
+| --- | --- |
+| `ngine_io.hashi.nomad_node` | `nomad node eligibility`, `nomad node drain` |
+| `ngine_io.hashi.nomad_job` | `nomad job run`, `nomad job plan`, `nomad job stop` |
+| `ngine_io.hashi.nomad_agent_info` | `nomad agent-info` |
+| `ngine_io.hashi.nomad_raft_info` | `nomad operator raft list-peers` |
+
+Connection options fall back to the same `NOMAD_*` environment variables the
+CLI uses, and can be set once for a play through the action group:
+
+```yaml
+- hosts: nomad_servers
+  module_defaults:
+    group/ngine_io.hashi.nomad:
+      url: https://nomad.example.com:4646
+      token: "{{ vault_nomad_token }}"
+  tasks:
+    - name: Drain a client before maintenance
+      ngine_io.hashi.nomad_node:
+        name: nomad-client3
+        drain: true
+        drain_deadline: 15m
+
+    - name: Submit a job
+      ngine_io.hashi.nomad_job:
+        content: "{{ lookup('template', 'nomad_jobs/traefik.nomad.j2') }}"
+```
+
+Two notes on idempotency, since both cases are easy to get wrong:
+
+- Nomad clears a node's drain strategy once the drain finishes but leaves the
+  node ineligible. `nomad_node` therefore decides whether a node is drained
+  from its eligibility and its remaining non terminal allocations, so
+  re-running a drain task reports no change instead of draining again.
+- `nomad_job` gets its idempotency from Nomad's plan endpoint rather than from
+  comparing text, so reformatting a job file is not a change. The plan also
+  reports task groups the scheduler cannot place; they are returned in
+  `warnings_from_plan` and raised as a warning.

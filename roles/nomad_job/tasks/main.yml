@@ -1,6 +1,28 @@
 ---
-- name: Handle Nomad job
-  ansible.builtin.include_tasks: job.yml
-  loop: "{{ nomad_job__job_templates }}"
-  loop_control:
-    label: "{{ item.name }}"
+- name: Handle Nomad jobs
+  module_defaults:
+    group/ngine_io.hashi.nomad:
+      url: "{{ nomad_job__nomad_addr }}"
+      namespace: "{{ nomad_job__nomad_namespace | default(omit, true) }}"
+      region: "{{ nomad_job__nomad_region | default(omit, true) }}"
+      token: "{{ nomad_job__nomad_token | default(omit, true) }}"
+      ca_path: "{{ nomad_job__nomad_cacert | default(omit, true) }}"
+      client_cert: "{{ nomad_job__nomad_client_cert | default(omit, true) }}"
+      client_key: "{{ nomad_job__nomad_client_key | default(omit, true) }}"
+  block:
+    - name: Handle Nomad job
+      ngine_io.hashi.nomad_job:
+        name: "{{ item.name | default(omit) }}"
+        # Rendered on the controller and handed to the API directly, so no
+        # job specification is written to disk on the target.
+        content: >-
+          {{ lookup('template', 'nomad_jobs/' ~ item.path ~ '.j2')
+             if item.state | default('present') != 'absent' else omit }}
+        namespace: "{{ item.namespace | default(nomad_job__nomad_namespace) | default(omit, true) }}"
+        state: "{{ item.state | default('present') }}"
+        purge: "{{ item.purge | default(false) }}"
+      vars:
+        job_vars: "{{ nomad_job__vars | combine(item.vars | default({})) }}"
+      loop: "{{ nomad_job__job_templates }}"
+      loop_control:
+        label: "{{ item.name }}"

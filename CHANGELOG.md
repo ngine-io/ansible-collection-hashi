@@ -19,6 +19,20 @@ All notable changes to this collection are documented here.
 - `nomad`: the bridge networking sysctls are set after `br_netfilter` is
   loaded, instead of being wrapped in `ignore_errors`.
 
+### New Modules
+
+- `nomad_node` - set scheduling eligibility and drain a client node, replacing
+  `nomad node eligibility` and `nomad node drain`.
+- `nomad_job` - register, stop and purge jobs, replacing `nomad job run`,
+  `nomad job plan` and `nomad job stop`.
+- `nomad_agent_info` - agent configuration, membership and statistics,
+  replacing `nomad agent-info`.
+- `nomad_raft_info` - the Raft peer set, replacing
+  `nomad operator raft list-peers`.
+
+All four talk to the Nomad HTTP API rather than the `nomad` binary, support
+check mode and diff, and are idempotent.
+
 ### Minor Changes
 
 - `nomad` and `consul`: every agent option is now reachable from the
@@ -34,7 +48,13 @@ All notable changes to this collection are documented here.
   the ambient umask.
 - `nomad_job`, `nomad_upgrade` and `consul_service` accept an ACL token and
   client TLS settings, so they work against a secured cluster.
-- All roles use FQCN module names and pass `ansible-lint`.
+- All roles use FQCN module names and pass `ansible-lint` at its production
+  profile.
+- `nomad_upgrade` and the `nomad_job` role drive Nomad through the new modules
+  instead of the `nomad` CLI, so both work in check mode and report changes
+  accurately.
+- The `nomad_job` role no longer writes job specifications to a file on the
+  target; they are rendered on the controller and handed to the API.
 
 ### Breaking Changes
 
