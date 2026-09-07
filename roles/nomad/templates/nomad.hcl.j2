@@ -113,6 +113,25 @@ http_api_response_headers {
 }
 
 {% endif %}
+{% if nomad__tls_enabled %}
+tls {
+  http = {{ nomad__tls_http | bool | to_json }}
+  rpc  = {{ nomad__tls_rpc | bool | to_json }}
+  ca_file   = "{{ nomad__tls_ca_file }}"
+  cert_file = "{{ nomad__tls_cert_file }}"
+  key_file  = "{{ nomad__tls_key_file }}"
+  verify_server_hostname = {{ nomad__tls_verify_server_hostname | bool | to_json }}
+  verify_https_client = {{ nomad__tls_verify_https_client | bool | to_json }}
+  rpc_upgrade_mode = {{ nomad__tls_rpc_upgrade_mode | bool | to_json }}
+{% if nomad__tls_min_version is not none %}
+  tls_min_version = "{{ nomad__tls_min_version }}"
+{% endif %}
+{% if nomad__tls_cipher_suites %}
+  tls_cipher_suites = "{{ nomad__tls_cipher_suites | join(',') }}"
+{% endif %}
+}
+
+{% endif %}
 telemetry {
   collection_interval = "{{ nomad__telemetry_collection_interval }}"
   disable_hostname = {{ nomad__telemetry_disable_hostname | bool | to_json }}

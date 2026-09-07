@@ -35,6 +35,41 @@
     mode: "{{ nomad__config_dir_mode }}"
     state: directory
 
+- name: Ensure TLS directory exists
+  file:
+    path: "{{ nomad__tls_path }}"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_dir_mode }}"
+    state: directory
+  when: nomad__tls_enabled | bool
+
+- name: Configure TLS material
+  copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - content: "{{ nomad__tls_ca_content }}"
+      dest: "{{ nomad__tls_ca_file }}"
+      mode: "0644"
+    - content: "{{ nomad__tls_cert_content }}"
+      dest: "{{ nomad__tls_cert_file }}"
+      mode: "0644"
+    - content: "{{ nomad__tls_key_content }}"
+      dest: "{{ nomad__tls_key_file }}"
+      mode: "0600"
+  loop_control:
+    label: "{{ item.dest }}"
+  when:
+    - nomad__tls_enabled | bool
+    - item.content is not none
+  no_log: true
+  notify:
+    - restart nomad
+
 - name: Configure base config
   template:
     src: nomad.hcl.j2

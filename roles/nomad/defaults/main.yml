@@ -83,6 +83,30 @@ nomad__limits_rpc_max_conns_per_client: null
 # Extra headers returned by the HTTP API, e.g. CORS headers.
 nomad__http_api_response_headers: {}
 
+# TLS, see https://developer.hashicorp.com/nomad/docs/configuration/tls
+# Certificates are expected to already be on the host. Alternatively set the
+# *_content variables below and the role writes them out.
+nomad__tls_enabled: false
+nomad__tls_http: true
+nomad__tls_rpc: true
+nomad__tls_path: "{{ nomad__config_path }}/tls"
+nomad__tls_ca_file: "{{ nomad__tls_path }}/ca.pem"
+nomad__tls_cert_file: "{{ nomad__tls_path }}/agent.pem"
+nomad__tls_key_file: "{{ nomad__tls_path }}/agent-key.pem"
+nomad__tls_verify_server_hostname: true
+nomad__tls_verify_https_client: false
+# Set to true for the first pass of a rolling TLS rollout so servers still
+# accept plaintext RPC from not yet converted peers, then set it back.
+nomad__tls_rpc_upgrade_mode: false
+nomad__tls_min_version: null
+nomad__tls_cipher_suites: []
+
+# Optional certificate material. When set, the role writes it to the
+# corresponding *_file path.
+nomad__tls_ca_content: null
+nomad__tls_cert_content: null
+nomad__tls_key_content: null
+
 # Telemetry, see https://developer.hashicorp.com/nomad/docs/configuration/telemetry
 nomad__telemetry_collection_interval: 60s
 nomad__telemetry_disable_hostname: true
