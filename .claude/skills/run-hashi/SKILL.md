@@ -193,6 +193,7 @@ they need real systemd hosts — they will not run against this container.
 | `type object 'Consul' has no attribute 'Agent'` | py-consul too new. `pip install 'py-consul==1.2.4'`. |
 | `curl: (7) Failed to connect to ... 4646` | The agent died on startup. `tail -30 /tmp/hashi-run/live/nomad.log`. |
 | Nomad has no leader, `/v1/status/leader` is `""` | `bootstrap_expect` > number of servers. |
+| `down` says stopped but 4646 is still open | Fixed: `down` now falls back to matching agents by command line and escalates to SIGKILL. If you see this, something outside `$HASHI_RUN_DIR` is holding the port. |
 | `ansible-galaxy: unrecognized arguments: -q` | `ansible-galaxy` has no `-q`; use `--force`. |
 
 ## Files

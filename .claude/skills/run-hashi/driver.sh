@@ -218,6 +218,27 @@ cmd_drive() {
   echo
 }
 
+# Kill any nomad/consul agent whose command line points into our run dir.
+# The pid files are the fast path; this is the one that actually guarantees
+# nothing is left holding 4646 or 8500.
+kill_strays() {
+  local signal="$1" found=1
+  for name in nomad consul; do
+    for pid in $(pgrep -x "$name" 2>/dev/null); do
+      if tr '\0' ' ' <"/proc/$pid/cmdline" 2>/dev/null | grep -q -- "$RUN_DIR"; then
+        kill "-$signal" "$pid" 2>/dev/null || true
+        found=0
+      fi
+    done
+  done
+  return $found
+}
+
+ports_free() {
+  ! curl -sSf --max-time 1 "http://127.0.0.1:$NOMAD_HTTP/v1/status/leader" >/dev/null 2>&1 &&
+    ! curl -sSf --max-time 1 "http://127.0.0.1:$CONSUL_HTTP/v1/status/leader" >/dev/null 2>&1
+}
+
 cmd_down() {
   local live="$RUN_DIR/live"
   for name in nomad consul; do
@@ -226,8 +247,20 @@ cmd_down() {
       rm -f "$live/$name.pid"
     fi
   done
+
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    ports_free && { log "stopped"; return 0; }
+    kill_strays TERM || true
+    sleep 1
+  done
+
+  kill_strays KILL || true
   sleep 2
-  log "stopped"
+  if ports_free; then
+    log "stopped (needed SIGKILL)"
+  else
+    echo "WARNING: something is still listening on $NOMAD_HTTP or $CONSUL_HTTP" >&2
+  fi
 }
 
 cmd_status() {
