@@ -16,6 +16,15 @@ nomad__config_dir_mode: "0700"
 # Run "nomad config validate" before any restart is triggered.
 nomad__config_validate: true
 
+# Bridge networking sysctls a Nomad client needs for the bridge network mode.
+# They are written to their own file rather than /etc/sysctl.conf so the role
+# does not fight whatever else manages that file.
+nomad__sysctl_file: /etc/sysctl.d/60-nomad-bridge.conf
+nomad__sysctl_bridge:
+  - net.bridge.bridge-nf-call-arptables
+  - net.bridge.bridge-nf-call-ip6tables
+  - net.bridge.bridge-nf-call-iptables
+
 # systemd unit. A client needs root for cgroups and the exec driver; a
 # server only node can run unprivileged.
 nomad__systemd_user: root

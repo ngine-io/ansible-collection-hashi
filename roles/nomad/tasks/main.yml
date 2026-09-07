@@ -37,17 +37,33 @@
   notify:
     - Restart nomad
 
+# The net.bridge.* sysctls only exist once br_netfilter is loaded, which is
+# why setting them used to be wrapped in ignore_errors.
+- name: Load the br_netfilter kernel module
+  ansible.builtin.command: modprobe br_netfilter
+  args:
+    creates: /proc/sys/net/bridge
+  when: "'client' in nomad__roles"
+
+- name: Load the br_netfilter kernel module on boot
+  ansible.builtin.copy:
+    content: "br_netfilter\n"
+    dest: /etc/modules-load.d/nomad-bridge.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: "'client' in nomad__roles"
+
 - name: Configure sysctl for bridge networking
   ansible.builtin.sysctl:
     name: "{{ item }}"
-    value: '1'
-  with_items:
-    - net.bridge.bridge-nf-call-arptables
-    - net.bridge.bridge-nf-call-ip6tables
-    - net.bridge.bridge-nf-call-iptables
+    value: "1"
+    sysctl_file: "{{ nomad__sysctl_file }}"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop: "{{ nomad__sysctl_bridge }}"
   when: "'client' in nomad__roles"
-  # TODO: Improve check
-  ignore_errors: true
 
 - name: Ensure TLS directory exists
   ansible.builtin.file:
