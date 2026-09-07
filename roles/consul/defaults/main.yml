@@ -228,4 +228,21 @@ consul__servers: |
   {{ _consul__servers }}
 
 consul__env_content: ""
+
+# Telemetry, see
+# https://developer.hashicorp.com/consul/docs/agent/config/config-files#telemetry
 consul__prometheus_retention_time: 600s
+consul__telemetry_disable_hostname: true
+consul__telemetry_metrics_prefix: null
+consul__telemetry_filter_default: true
+consul__telemetry_prefix_filter: []
+consul__telemetry_statsd_address: null
+consul__telemetry_statsite_address: null
+consul__telemetry_dogstatsd_addr: null
+consul__telemetry_dogstatsd_tags: []
+
+# Service mesh, see
+# https://developer.hashicorp.com/consul/docs/connect/configuration
+consul__connect_ca_provider: null
+consul__connect_ca_config: {}
+consul__connect_enable_mesh_gateway_wan_federation: false

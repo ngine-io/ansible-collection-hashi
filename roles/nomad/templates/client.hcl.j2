@@ -293,8 +293,7 @@ plugin "docker" {
       }
     }
 {% if nomad__client_plugin_docker_extra_config %}
-{{ hcl_body(nomad__client_plugin_docker_extra_config, 4) }}
-{% endif %}
+{{ hcl_body(nomad__client_plugin_docker_extra_config, 4) }}{% endif %}
   }
 }
 {% endif %}
@@ -362,8 +361,7 @@ plugin "raw_exec" {
 
 plugin "{{ plugin_name }}" {
   config {
-{{ hcl_body(plugin_config, 4) }}
-  }
+{{ hcl_body(plugin_config, 4) }}  }
 }
 {% endfor %}
 {% endblock %}

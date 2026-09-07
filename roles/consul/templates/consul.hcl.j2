@@ -1,3 +1,4 @@
+{% from "_hcl_macros.j2" import hcl_body %}
 # {{ ansible_managed }}
 # https://developer.hashicorp.com/consul/docs/agent/config/config-files
 
@@ -393,8 +394,38 @@ acl {
 {% endif %}
 connect {
   enabled = {{ consul__connect_enabled | bool | to_json }}
+{% if consul__connect_ca_provider is not none %}
+  ca_provider = "{{ consul__connect_ca_provider }}"
+{% endif %}
+{% if consul__connect_ca_config %}
+  ca_config {
+{{ hcl_body(consul__connect_ca_config, 4) }}  }
+{% endif %}
+{% if consul__connect_enable_mesh_gateway_wan_federation | bool %}
+  enable_mesh_gateway_wan_federation = true
+{% endif %}
 }
 
 telemetry {
   prometheus_retention_time = "{{ consul__prometheus_retention_time }}"
+  disable_hostname = {{ consul__telemetry_disable_hostname | bool | to_json }}
+{% if consul__telemetry_metrics_prefix is not none %}
+  metrics_prefix = "{{ consul__telemetry_metrics_prefix }}"
+{% endif %}
+  filter_default = {{ consul__telemetry_filter_default | bool | to_json }}
+{% if consul__telemetry_prefix_filter %}
+  prefix_filter = {{ consul__telemetry_prefix_filter | to_json }}
+{% endif %}
+{% if consul__telemetry_statsd_address is not none %}
+  statsd_address = "{{ consul__telemetry_statsd_address }}"
+{% endif %}
+{% if consul__telemetry_statsite_address is not none %}
+  statsite_address = "{{ consul__telemetry_statsite_address }}"
+{% endif %}
+{% if consul__telemetry_dogstatsd_addr is not none %}
+  dogstatsd_addr = "{{ consul__telemetry_dogstatsd_addr }}"
+{% endif %}
+{% if consul__telemetry_dogstatsd_tags %}
+  dogstatsd_tags = {{ consul__telemetry_dogstatsd_tags | to_json }}
+{% endif %}
 }
