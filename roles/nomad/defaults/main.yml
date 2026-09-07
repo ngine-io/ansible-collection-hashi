@@ -34,6 +34,55 @@ nomad__port_http: 4646
 nomad__port_rpc: 4647
 nomad__port_serf: 4648
 
+# Addresses the agent binds to per interface. Null falls back to
+# nomad__bind_address.
+nomad__address_http: null
+nomad__address_rpc: null
+nomad__address_serf: null
+
+# Addresses advertised to peers per interface. Useful when the agent sits
+# behind NAT or on a host with a separate management network.
+nomad__advertise_http: "{{ nomad__advertise_address }}"
+nomad__advertise_rpc: "{{ nomad__advertise_address }}"
+nomad__advertise_serf: "{{ nomad__advertise_address }}"
+
+# Logging
+nomad__log_json: false
+nomad__log_file: null
+nomad__log_rotate_bytes: null
+nomad__log_rotate_duration: null
+nomad__log_rotate_max_files: null
+nomad__enable_syslog: false
+nomad__syslog_facility: null
+
+# Agent behaviour
+nomad__plugin_dir: null
+nomad__enable_debug: false
+# Nomad defaults this to false. Config managed clusters have no use for the
+# checkpoint call home, so the role opts out.
+nomad__disable_update_check: true
+nomad__disable_anonymous_signature: true
+nomad__leave_on_interrupt: false
+nomad__leave_on_terminate: false
+
+# Web UI, see https://developer.hashicorp.com/nomad/docs/configuration/ui
+nomad__ui_enabled: true
+nomad__ui_consul_url: null
+nomad__ui_vault_url: null
+nomad__ui_label_text: null
+nomad__ui_label_background_color: null
+nomad__ui_label_text_color: null
+
+# Agent limits, see
+# https://developer.hashicorp.com/nomad/docs/configuration#limits-parameters
+nomad__limits_http_max_conns_per_client: null
+nomad__limits_https_handshake_timeout: null
+nomad__limits_rpc_handshake_timeout: null
+nomad__limits_rpc_max_conns_per_client: null
+
+# Extra headers returned by the HTTP API, e.g. CORS headers.
+nomad__http_api_response_headers: {}
+
 nomad__telemetry_collection_interval: 60s
 
 # Ansible Inventory Nomad Group Name of Servers

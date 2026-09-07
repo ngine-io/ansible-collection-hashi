@@ -1,4 +1,5 @@
 # {{ ansible_managed }}
+# https://developer.hashicorp.com/nomad/docs/configuration
 name = "{{ nomad__node_name }}"
 region = "{{ nomad__region }}"
 datacenter = "{{ nomad__datacenter }}"
@@ -6,6 +7,32 @@ datacenter = "{{ nomad__datacenter }}"
 bind_addr = "{{ nomad__bind_address }}"
 data_dir = "{{ nomad__data_path }}"
 log_level = "{{ nomad__log_level }}"
+log_json = {{ nomad__log_json | bool | to_json }}
+{% if nomad__log_file is not none %}
+log_file = "{{ nomad__log_file }}"
+{% endif %}
+{% if nomad__log_rotate_bytes is not none %}
+log_rotate_bytes = {{ nomad__log_rotate_bytes | int }}
+{% endif %}
+{% if nomad__log_rotate_duration is not none %}
+log_rotate_duration = "{{ nomad__log_rotate_duration }}"
+{% endif %}
+{% if nomad__log_rotate_max_files is not none %}
+log_rotate_max_files = {{ nomad__log_rotate_max_files | int }}
+{% endif %}
+enable_syslog = {{ nomad__enable_syslog | bool | to_json }}
+{% if nomad__syslog_facility is not none %}
+syslog_facility = "{{ nomad__syslog_facility }}"
+{% endif %}
+
+{% if nomad__plugin_dir is not none %}
+plugin_dir = "{{ nomad__plugin_dir }}"
+{% endif %}
+enable_debug = {{ nomad__enable_debug | bool | to_json }}
+disable_update_check = {{ nomad__disable_update_check | bool | to_json }}
+disable_anonymous_signature = {{ nomad__disable_anonymous_signature | bool | to_json }}
+leave_on_interrupt = {{ nomad__leave_on_interrupt | bool | to_json }}
+leave_on_terminate = {{ nomad__leave_on_terminate | bool | to_json }}
 
 ports {
   http = {{ nomad__port_http }}
@@ -13,12 +40,79 @@ ports {
   serf = {{ nomad__port_serf }}
 }
 
-advertise {
-  http = "{{ nomad__advertise_address }}"
-  rpc  = "{{ nomad__advertise_address }}"
-  serf = "{{ nomad__advertise_address }}"
+{% if nomad__address_http is not none or nomad__address_rpc is not none or nomad__address_serf is not none %}
+addresses {
+{% if nomad__address_http is not none %}
+  http = "{{ nomad__address_http }}"
+{% endif %}
+{% if nomad__address_rpc is not none %}
+  rpc  = "{{ nomad__address_rpc }}"
+{% endif %}
+{% if nomad__address_serf is not none %}
+  serf = "{{ nomad__address_serf }}"
+{% endif %}
 }
 
+{% endif %}
+advertise {
+  http = "{{ nomad__advertise_http }}"
+  rpc  = "{{ nomad__advertise_rpc }}"
+  serf = "{{ nomad__advertise_serf }}"
+}
+
+ui {
+  enabled = {{ nomad__ui_enabled | bool | to_json }}
+{% if nomad__ui_consul_url is not none %}
+  consul {
+    ui_url = "{{ nomad__ui_consul_url }}"
+  }
+{% endif %}
+{% if nomad__ui_vault_url is not none %}
+  vault {
+    ui_url = "{{ nomad__ui_vault_url }}"
+  }
+{% endif %}
+{% if nomad__ui_label_text is not none %}
+  label {
+    text = "{{ nomad__ui_label_text }}"
+{% if nomad__ui_label_background_color is not none %}
+    background_color = "{{ nomad__ui_label_background_color }}"
+{% endif %}
+{% if nomad__ui_label_text_color is not none %}
+    text_color = "{{ nomad__ui_label_text_color }}"
+{% endif %}
+  }
+{% endif %}
+}
+
+{% if nomad__limits_http_max_conns_per_client is not none
+   or nomad__limits_https_handshake_timeout is not none
+   or nomad__limits_rpc_handshake_timeout is not none
+   or nomad__limits_rpc_max_conns_per_client is not none %}
+limits {
+{% if nomad__limits_http_max_conns_per_client is not none %}
+  http_max_conns_per_client = {{ nomad__limits_http_max_conns_per_client | int }}
+{% endif %}
+{% if nomad__limits_https_handshake_timeout is not none %}
+  https_handshake_timeout = "{{ nomad__limits_https_handshake_timeout }}"
+{% endif %}
+{% if nomad__limits_rpc_handshake_timeout is not none %}
+  rpc_handshake_timeout = "{{ nomad__limits_rpc_handshake_timeout }}"
+{% endif %}
+{% if nomad__limits_rpc_max_conns_per_client is not none %}
+  rpc_max_conns_per_client = {{ nomad__limits_rpc_max_conns_per_client | int }}
+{% endif %}
+}
+
+{% endif %}
+{% if nomad__http_api_response_headers %}
+http_api_response_headers {
+{% for key, value in nomad__http_api_response_headers.items() %}
+  {{ key | to_json }} = {{ value | to_json }}
+{% endfor %}
+}
+
+{% endif %}
 telemetry {
   collection_interval = "{{ nomad__telemetry_collection_interval }}"
   disable_hostname = true
