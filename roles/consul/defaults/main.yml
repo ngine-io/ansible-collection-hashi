@@ -246,3 +246,26 @@ consul__telemetry_dogstatsd_tags: []
 consul__connect_ca_provider: null
 consul__connect_ca_config: {}
 consul__connect_enable_mesh_gateway_wan_federation: false
+
+# Services and checks registered from the agent config. The consul_service
+# role registers through the API instead; config file registration is the
+# right choice for a check that must exist before the agent is reachable.
+#
+# consul__services:
+#   - name: node-exporter
+#     port: 9100
+#     checks:
+#       - id: node-exporter-http
+#         http: "http://localhost:9100/metrics"
+#         interval: 30s
+consul__services: []
+consul__checks: []
+consul__watches: []
+
+# Escape hatch for anything this role does not model explicitly, including
+# enterprise only stanzas. Consul reads JSON and HCL from the config directory
+# and merges both, so this is written as JSON and needs no HCL quoting rules.
+consul__extra_config: {}
+
+# Verbatim HCL fragments, keyed by file name.
+consul__extra_config_files: {}

@@ -73,6 +73,54 @@
     mode: "{{ consul__config_file_mode }}"
   notify: restart consul
 
+# Consul merges every .hcl and .json file in the config directory. The zz-
+# prefix keeps these last so they win over what the role renders.
+- name: Configure services, checks and watches
+  copy:
+    content: "{{ {'services': consul__services, 'checks': consul__checks, 'watches': consul__watches} | to_nice_json(indent=2) }}\n"
+    dest: "{{ consul__config_path }}/zz-services.json"
+    owner: "{{ consul__config_owner }}"
+    group: "{{ consul__config_group }}"
+    mode: "{{ consul__config_file_mode }}"
+  when: consul__services or consul__checks or consul__watches
+  notify: restart consul
+
+- name: Remove services, checks and watches
+  file:
+    path: "{{ consul__config_path }}/zz-services.json"
+    state: absent
+  when: not (consul__services or consul__checks or consul__watches)
+  notify: restart consul
+
+- name: Configure extra config
+  copy:
+    content: "{{ consul__extra_config | to_nice_json(indent=2) }}\n"
+    dest: "{{ consul__config_path }}/zz-extra.json"
+    owner: "{{ consul__config_owner }}"
+    group: "{{ consul__config_group }}"
+    mode: "{{ consul__config_file_mode }}"
+  when: consul__extra_config
+  notify: restart consul
+
+- name: Remove extra config
+  file:
+    path: "{{ consul__config_path }}/zz-extra.json"
+    state: absent
+  when: not consul__extra_config
+  notify: restart consul
+
+- name: Configure extra config files
+  copy:
+    content: "{{ item.value }}"
+    dest: "{{ consul__config_path }}/{{ item.key }}"
+    owner: "{{ consul__config_owner }}"
+    group: "{{ consul__config_group }}"
+    mode: "{{ consul__config_file_mode }}"
+  loop: "{{ consul__extra_config_files | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  notify: restart consul
+
 - name: Validate consul config
   command: consul validate "{{ consul__config_path }}/"
   changed_when: false
