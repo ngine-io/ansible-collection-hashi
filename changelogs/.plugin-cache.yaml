@@ -1,0 +1,36 @@
+objects: {}
+plugins:
+  become: {}
+  cache: {}
+  callback: {}
+  cliconf: {}
+  connection: {}
+  httpapi: {}
+  inventory: {}
+  lookup: {}
+  module:
+    nomad_agent_info:
+      description: Gather information about a Nomad agent
+      name: nomad_agent_info
+      namespace: ''
+      version_added: 1.8.0
+    nomad_job:
+      description: Submit and remove Nomad jobs
+      name: nomad_job
+      namespace: ''
+      version_added: 1.8.0
+    nomad_node:
+      description: Manage scheduling eligibility and drain of a Nomad client node
+      name: nomad_node
+      namespace: ''
+      version_added: 1.8.0
+    nomad_raft_info:
+      description: Gather information about the Nomad Raft peer set
+      name: nomad_raft_info
+      namespace: ''
+      version_added: 1.8.0
+  netconf: {}
+  shell: {}
+  strategy: {}
+  vars: {}
+version: 1.8.0

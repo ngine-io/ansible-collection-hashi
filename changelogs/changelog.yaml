@@ -1,0 +1,17 @@
+ancestor: null
+releases:
+  1.8.0:
+    modules:
+    - description: Gather information about a Nomad agent.
+      name: nomad_agent_info
+      namespace: ''
+    - description: Submit and remove Nomad jobs.
+      name: nomad_job
+      namespace: ''
+    - description: Manage scheduling eligibility and drain of a Nomad client node.
+      name: nomad_node
+      namespace: ''
+    - description: Gather information about the Nomad Raft peer set.
+      name: nomad_raft_info
+      namespace: ''
+    release_date: '2026-09-07'

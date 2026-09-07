@@ -465,7 +465,9 @@ nomad__client_plugin_java_allow_caps: []
 
 # raw_exec
 nomad__client_plugin_raw_exec_enabled: false
-nomad__client_plugin_raw_exec_no_cgroups: false
+# Removed from the raw_exec driver in Nomad 1.7. Setting it on a newer agent
+# makes the plugin loader refuse to start, so it is only rendered when set.
+nomad__client_plugin_raw_exec_no_cgroups: null
 nomad__client_plugin_raw_exec_denied_host_uids: null
 nomad__client_plugin_raw_exec_denied_host_gids: null
 

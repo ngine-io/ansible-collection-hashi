@@ -345,7 +345,9 @@ plugin "java" {
 plugin "raw_exec" {
   config {
     enabled = {{ nomad__client_plugin_raw_exec_enabled | bool | to_json }}
+{% if nomad__client_plugin_raw_exec_no_cgroups is not none %}
     no_cgroups = {{ nomad__client_plugin_raw_exec_no_cgroups | bool | to_json }}
+{% endif %}
 {% if nomad__client_plugin_raw_exec_denied_host_uids is not none %}
     denied_host_uids = "{{ nomad__client_plugin_raw_exec_denied_host_uids }}"
 {% endif %}
