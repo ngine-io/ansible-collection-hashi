@@ -69,6 +69,61 @@ autopilot {
 
 {% if consul__encrypt %}
 encrypt = "{{ consul__encrypt }}"
+encrypt_verify_incoming = {{ consul__encrypt_verify_incoming | bool | to_json }}
+encrypt_verify_outgoing = {{ consul__encrypt_verify_outgoing | bool | to_json }}
+{% endif %}
+
+{% if consul__tls_enabled %}
+tls {
+  defaults {
+    ca_file = "{{ consul__tls_ca_file }}"
+{% if consul__tls_ca_path is not none %}
+    ca_path = "{{ consul__tls_ca_path }}"
+{% endif %}
+{% if not consul__auto_encrypt_enabled or consul__role == 'server' %}
+    cert_file = "{{ consul__tls_cert_file }}"
+    key_file = "{{ consul__tls_key_file }}"
+{% endif %}
+    verify_incoming = {{ consul__tls_verify_incoming | bool | to_json }}
+    verify_outgoing = {{ consul__tls_verify_outgoing | bool | to_json }}
+{% if consul__tls_min_version is not none %}
+    tls_min_version = "{{ consul__tls_min_version }}"
+{% endif %}
+{% if consul__tls_cipher_suites %}
+    tls_cipher_suites = "{{ consul__tls_cipher_suites | join(',') }}"
+{% endif %}
+  }
+
+  internal_rpc {
+    verify_incoming = {{ consul__tls_internal_rpc_verify_incoming | bool | to_json }}
+    verify_server_hostname = {{ consul__tls_internal_rpc_verify_server_hostname | bool | to_json }}
+  }
+
+  https {
+    verify_incoming = {{ consul__tls_https_verify_incoming | bool | to_json }}
+  }
+
+  grpc {
+    verify_incoming = {{ consul__tls_grpc_verify_incoming | bool | to_json }}
+    use_auto_cert = {{ consul__tls_grpc_use_auto_cert | bool | to_json }}
+  }
+}
+
+{% if consul__auto_encrypt_enabled %}
+auto_encrypt {
+{% if consul__role == 'server' %}
+  allow_tls = true
+{% else %}
+  tls = true
+{% if consul__auto_encrypt_dns_san %}
+  dns_san = {{ consul__auto_encrypt_dns_san | to_json }}
+{% endif %}
+{% if consul__auto_encrypt_ip_san %}
+  ip_san = {{ consul__auto_encrypt_ip_san | to_json }}
+{% endif %}
+{% endif %}
+}
+{% endif %}
 {% endif %}
 
 bind_addr = "{{ consul__bind_address }}"

@@ -180,6 +180,42 @@ consul__autopilot_disable_upgrade_migration: false
 consul__autopilot_upgrade_version_tag: null
 consul__data_dir: /opt/consul
 consul__encrypt: ""
+# Gossip is encrypted once consul__encrypt is set. During a rollout set both
+# to false, then back to true once every agent has the key.
+consul__encrypt_verify_incoming: true
+consul__encrypt_verify_outgoing: true
+
+# TLS, see https://developer.hashicorp.com/consul/docs/agent/config/config-files#tls
+consul__tls_enabled: false
+consul__tls_path: "{{ consul__config_path }}/tls"
+consul__tls_ca_file: "{{ consul__tls_path }}/ca.pem"
+consul__tls_ca_path: null
+consul__tls_cert_file: "{{ consul__tls_path }}/agent.pem"
+consul__tls_key_file: "{{ consul__tls_path }}/agent-key.pem"
+# verify_incoming requires every client of the HTTPS API to present a
+# certificate too, which usually is not what you want on the HTTPS listener.
+# It is enabled for internal RPC only below.
+consul__tls_verify_incoming: false
+consul__tls_verify_outgoing: true
+consul__tls_min_version: null
+consul__tls_cipher_suites: []
+consul__tls_internal_rpc_verify_incoming: true
+consul__tls_internal_rpc_verify_server_hostname: true
+consul__tls_https_verify_incoming: false
+consul__tls_grpc_verify_incoming: false
+consul__tls_grpc_use_auto_cert: false
+
+# auto_encrypt distributes client certificates from the servers, so only the
+# servers need a full certificate and key.
+consul__auto_encrypt_enabled: false
+consul__auto_encrypt_dns_san: []
+consul__auto_encrypt_ip_san: []
+
+# Optional certificate material. When set, the role writes it to the
+# corresponding *_file path.
+consul__tls_ca_content: null
+consul__tls_cert_content: null
+consul__tls_key_content: null
 
 consul__servers: |
   {% set _consul__servers = [] %}

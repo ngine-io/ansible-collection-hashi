@@ -21,6 +21,40 @@
     mode: 0700
     state: directory
 
+- name: Ensure TLS directory exists
+  file:
+    path: "{{ consul__tls_path }}"
+    owner: "{{ consul__config_owner }}"
+    group: "{{ consul__config_group }}"
+    mode: "{{ consul__config_dir_mode }}"
+    state: directory
+  when: consul__tls_enabled | bool
+
+- name: Configure TLS material
+  copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ consul__config_owner }}"
+    group: "{{ consul__config_group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - content: "{{ consul__tls_ca_content }}"
+      dest: "{{ consul__tls_ca_file }}"
+      mode: "0644"
+    - content: "{{ consul__tls_cert_content }}"
+      dest: "{{ consul__tls_cert_file }}"
+      mode: "0644"
+    - content: "{{ consul__tls_key_content }}"
+      dest: "{{ consul__tls_key_file }}"
+      mode: "0600"
+  loop_control:
+    label: "{{ item.dest }}"
+  when:
+    - consul__tls_enabled | bool
+    - item.content is not none
+  no_log: true
+  notify: restart consul
+
 - name: Setup consul.env
   copy:
     content: "{{ consul__env_content }}"
