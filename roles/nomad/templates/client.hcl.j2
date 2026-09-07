@@ -1,24 +1,92 @@
 # {{ ansible_managed }}
+# https://developer.hashicorp.com/nomad/docs/configuration/client
 client {
   enabled = true
-{% if nomad__client_network_interface is not none %}
-  network_interface = "{{ nomad__client_network_interface }}"
-{% endif %}
-{% if not nomad__use_consul %}
-  servers = {{ nomad__servers | to_json }}
+{% if nomad__client_node_pool is not none %}
+  node_pool = "{{ nomad__client_node_pool }}"
 {% endif %}
 {% if nomad__node_class %}
   node_class = "{{ nomad__node_class }}"
 {% endif %}
+{% if nomad__client_alloc_dir is not none %}
+  alloc_dir = "{{ nomad__client_alloc_dir }}"
+{% endif %}
+{% if nomad__client_state_dir is not none %}
+  state_dir = "{{ nomad__client_state_dir }}"
+{% endif %}
 
+{# Networking #}
+{% if nomad__client_network_interface is not none %}
+  network_interface = "{{ nomad__client_network_interface }}"
+{% endif %}
+{% if nomad__client_preferred_address_family is not none %}
+  preferred_address_family = "{{ nomad__client_preferred_address_family }}"
+{% endif %}
+{% if nomad__client_network_speed is not none %}
+  network_speed = {{ nomad__client_network_speed | int }}
+{% endif %}
+{% if nomad__client_bridge_network_name is not none %}
+  bridge_network_name = "{{ nomad__client_bridge_network_name }}"
+{% endif %}
+{% if nomad__client_bridge_network_subnet is not none %}
+  bridge_network_subnet = "{{ nomad__client_bridge_network_subnet }}"
+{% endif %}
+  bridge_network_hairpin_mode = {{ nomad__client_bridge_network_hairpin_mode | bool | to_json }}
+{% if nomad__client_min_dynamic_port is not none %}
+  min_dynamic_port = {{ nomad__client_min_dynamic_port | int }}
+{% endif %}
+{% if nomad__client_max_dynamic_port is not none %}
+  max_dynamic_port = {{ nomad__client_max_dynamic_port | int }}
+{% endif %}
+{% if nomad__client_min_port is not none %}
+  client_min_port = {{ nomad__client_min_port | int }}
+{% endif %}
+{% if nomad__client_max_port is not none %}
+  client_max_port = {{ nomad__client_max_port | int }}
+{% endif %}
+{% if nomad__client_cni_path is not none %}
+  cni_path = "{{ nomad__client_cni_path }}"
+{% endif %}
+{% if nomad__client_cni_config_dir is not none %}
+  cni_config_dir = "{{ nomad__client_cni_config_dir }}"
+{% endif %}
+
+{% if nomad__client_retry_join %}
+  server_join {
+    retry_join = {{ nomad__client_retry_join | to_json }}
+{% if nomad__client_retry_interval is not none %}
+    retry_interval = "{{ nomad__client_retry_interval }}"
+{% endif %}
+{% if nomad__client_retry_max is not none %}
+    retry_max = {{ nomad__client_retry_max | int }}
+{% endif %}
+  }
+
+{% endif %}
 {% if nomad__client_meta %}
   meta {
 {% for key, value in nomad__client_meta.items() %}
     {{ key }} = {{ value | to_json }}
 {% endfor %}
   }
-{% endif %}
 
+{% endif %}
+{% if nomad__client_options %}
+  options {
+{% for key, value in nomad__client_options.items() %}
+    {{ key | to_json }} = {{ value | to_json }}
+{% endfor %}
+  }
+
+{% endif %}
+{% if nomad__client_chroot_env %}
+  chroot_env {
+{% for key, value in nomad__client_chroot_env.items() %}
+    {{ key | to_json }} = {{ value | to_json }}
+{% endfor %}
+  }
+
+{% endif %}
   reserved {
     cpu = {{ nomad__client_reserved_cpu }}
     memory = {{ nomad__client_reserved_memory }}
@@ -29,18 +97,131 @@ client {
 {% if nomad__client_cpu_total_compute is not none %}
   cpu_total_compute = {{ nomad__client_cpu_total_compute }}
 {% endif %}
+{% if nomad__client_memory_total_mb is not none %}
+  memory_total_mb = {{ nomad__client_memory_total_mb | int }}
+{% endif %}
+{% if nomad__client_max_kill_timeout is not none %}
+  max_kill_timeout = "{{ nomad__client_max_kill_timeout }}"
+{% endif %}
+{% if nomad__client_cgroup_parent is not none %}
+  cgroup_parent = "{{ nomad__client_cgroup_parent }}"
+{% endif %}
+  no_host_uuid = {{ nomad__client_no_host_uuid | bool | to_json }}
+  disable_remote_exec = {{ nomad__client_disable_remote_exec | bool | to_json }}
+  nomad_service_discovery = {{ nomad__client_nomad_service_discovery | bool | to_json }}
 
+{# Allocation garbage collection #}
+{% if nomad__client_gc_interval is not none %}
+  gc_interval = "{{ nomad__client_gc_interval }}"
+{% endif %}
+{% if nomad__client_gc_disk_usage_threshold is not none %}
+  gc_disk_usage_threshold = {{ nomad__client_gc_disk_usage_threshold }}
+{% endif %}
+{% if nomad__client_gc_inode_usage_threshold is not none %}
+  gc_inode_usage_threshold = {{ nomad__client_gc_inode_usage_threshold }}
+{% endif %}
+{% if nomad__client_gc_max_allocs is not none %}
+  gc_max_allocs = {{ nomad__client_gc_max_allocs | int }}
+{% endif %}
+{% if nomad__client_gc_parallel_destroys is not none %}
+  gc_parallel_destroys = {{ nomad__client_gc_parallel_destroys | int }}
+{% endif %}
+
+{% if nomad__client_drain_on_shutdown_enabled | bool %}
+  drain_on_shutdown {
+{% if nomad__client_drain_on_shutdown_deadline is not none %}
+    deadline = "{{ nomad__client_drain_on_shutdown_deadline }}"
+{% endif %}
+    force = {{ nomad__client_drain_on_shutdown_force | bool | to_json }}
+    ignore_system_jobs = {{ nomad__client_drain_on_shutdown_ignore_system_jobs | bool | to_json }}
+  }
+
+{% endif %}
+{% if nomad__client_template_function_denylist is not none
+   or nomad__client_template_disable_file_sandbox | bool
+   or nomad__client_template_max_stale is not none
+   or nomad__client_template_block_query_wait_time is not none
+   or nomad__client_template_wait_min is not none %}
+  template {
+{% if nomad__client_template_function_denylist is not none %}
+    function_denylist = {{ nomad__client_template_function_denylist | to_json }}
+{% endif %}
+    disable_file_sandbox = {{ nomad__client_template_disable_file_sandbox | bool | to_json }}
+{% if nomad__client_template_max_stale is not none %}
+    max_stale = "{{ nomad__client_template_max_stale }}"
+{% endif %}
+{% if nomad__client_template_block_query_wait_time is not none %}
+    block_query_wait = "{{ nomad__client_template_block_query_wait_time }}"
+{% endif %}
+{% if nomad__client_template_wait_min is not none %}
+    wait {
+      min = "{{ nomad__client_template_wait_min }}"
+      max = "{{ nomad__client_template_wait_max | default(nomad__client_template_wait_min, true) }}"
+    }
+{% endif %}
+  }
+
+{% endif %}
+{% if nomad__client_artifact_http_read_timeout is not none
+   or nomad__client_artifact_http_max_size is not none
+   or nomad__client_artifact_gcs_timeout is not none
+   or nomad__client_artifact_git_timeout is not none
+   or nomad__client_artifact_hg_timeout is not none
+   or nomad__client_artifact_s3_timeout is not none
+   or nomad__client_artifact_decompression_size_limit is not none
+   or nomad__client_artifact_decompression_file_count_limit is not none
+   or nomad__client_artifact_disable_filesystem_isolation | bool
+   or nomad__client_artifact_set_environment_variables is not none %}
+  artifact {
+{% if nomad__client_artifact_http_read_timeout is not none %}
+    http_read_timeout = "{{ nomad__client_artifact_http_read_timeout }}"
+{% endif %}
+{% if nomad__client_artifact_http_max_size is not none %}
+    http_max_size = "{{ nomad__client_artifact_http_max_size }}"
+{% endif %}
+{% if nomad__client_artifact_gcs_timeout is not none %}
+    gcs_timeout = "{{ nomad__client_artifact_gcs_timeout }}"
+{% endif %}
+{% if nomad__client_artifact_git_timeout is not none %}
+    git_timeout = "{{ nomad__client_artifact_git_timeout }}"
+{% endif %}
+{% if nomad__client_artifact_hg_timeout is not none %}
+    hg_timeout = "{{ nomad__client_artifact_hg_timeout }}"
+{% endif %}
+{% if nomad__client_artifact_s3_timeout is not none %}
+    s3_timeout = "{{ nomad__client_artifact_s3_timeout }}"
+{% endif %}
+{% if nomad__client_artifact_decompression_size_limit is not none %}
+    decompression_size_limit = "{{ nomad__client_artifact_decompression_size_limit }}"
+{% endif %}
+{% if nomad__client_artifact_decompression_file_count_limit is not none %}
+    decompression_file_count_limit = {{ nomad__client_artifact_decompression_file_count_limit | int }}
+{% endif %}
+    disable_filesystem_isolation = {{ nomad__client_artifact_disable_filesystem_isolation | bool | to_json }}
+{% if nomad__client_artifact_set_environment_variables is not none %}
+    set_environment_variables = "{{ nomad__client_artifact_set_environment_variables }}"
+{% endif %}
+  }
+
+{% endif %}
 {% for host_network in nomad__client_host_networks %}
   host_network "{{ host_network.name }}" {
     cidr = "{{ host_network.cidr }}"
+{% if host_network.interface is defined %}
+    interface = "{{ host_network.interface }}"
+{% endif %}
+{% if host_network.reserved_ports is defined %}
+    reserved_ports = "{{ host_network.reserved_ports }}"
+{% endif %}
   }
-{% endfor %}
 
+{% endfor %}
 {% for host_volume in nomad__client_host_volumes %}
   host_volume "{{ host_volume.name }}" {
     path = "{{ nomad__client_host_volume_basepath + host_volume.path }}"
     read_only = {{ (host_volume.read_only | default(false)) | bool | to_json }}
   }
+
 {% endfor %}
 }
 

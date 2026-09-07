@@ -285,7 +285,76 @@ nomad__consul_cert_file: null
 nomad__consul_key_file: null
 
 nomad__client_meta: {}
+nomad__client_options: {}
+nomad__client_chroot_env: {}
+nomad__client_node_pool: null
+
+# Networking
 nomad__client_network_interface: null
+nomad__client_preferred_address_family: null
+nomad__client_network_speed: null
+nomad__client_bridge_network_name: null
+nomad__client_bridge_network_subnet: null
+nomad__client_bridge_network_hairpin_mode: false
+nomad__client_min_dynamic_port: null
+nomad__client_max_dynamic_port: null
+nomad__client_min_port: null
+nomad__client_max_port: null
+
+# CNI. Matches the paths used by the cni role of this collection.
+nomad__client_cni_path: null
+nomad__client_cni_config_dir: null
+
+# How clients find the servers. Ignored when Consul discovery is used.
+nomad__client_retry_join: "{{ [] if nomad__use_consul else nomad__servers }}"
+nomad__client_retry_interval: null
+nomad__client_retry_max: null
+
+# Directories. Null keeps them under nomad__data_path.
+nomad__client_alloc_dir: null
+nomad__client_state_dir: null
+
+nomad__client_memory_total_mb: null
+nomad__client_max_kill_timeout: null
+nomad__client_no_host_uuid: true
+nomad__client_disable_remote_exec: false
+nomad__client_cgroup_parent: null
+nomad__client_nomad_service_discovery: true
+
+# Allocation garbage collection
+nomad__client_gc_interval: null
+nomad__client_gc_disk_usage_threshold: null
+nomad__client_gc_inode_usage_threshold: null
+nomad__client_gc_max_allocs: null
+nomad__client_gc_parallel_destroys: null
+
+# Drain the node when the agent shuts down, so a planned reboot moves the
+# allocations instead of letting them fail over on heartbeat timeout.
+nomad__client_drain_on_shutdown_enabled: false
+nomad__client_drain_on_shutdown_deadline: null
+nomad__client_drain_on_shutdown_force: false
+nomad__client_drain_on_shutdown_ignore_system_jobs: false
+
+# template stanza, see
+# https://developer.hashicorp.com/nomad/docs/configuration/client#template-parameters
+nomad__client_template_function_denylist: null
+nomad__client_template_disable_file_sandbox: false
+nomad__client_template_max_stale: null
+nomad__client_template_block_query_wait_time: null
+nomad__client_template_wait_min: null
+nomad__client_template_wait_max: null
+
+# artifact stanza
+nomad__client_artifact_http_read_timeout: null
+nomad__client_artifact_http_max_size: null
+nomad__client_artifact_gcs_timeout: null
+nomad__client_artifact_git_timeout: null
+nomad__client_artifact_hg_timeout: null
+nomad__client_artifact_s3_timeout: null
+nomad__client_artifact_decompression_size_limit: null
+nomad__client_artifact_decompression_file_count_limit: null
+nomad__client_artifact_disable_filesystem_isolation: false
+nomad__client_artifact_set_environment_variables: null
 
 # Reserved resources
 nomad__client_reserved_cpu: 200
