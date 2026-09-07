@@ -9,10 +9,14 @@ description: Hashicorp Stack Collection
 license:
   - GPL-3.0-or-later
 tags:
+  - infrastructure
+  - linux
   - hashicorp
   - nomad
   - consul
-dependencies: {}
+dependencies:
+  # consul_service uses community.general.consul
+  community.general: ">=1.0.0"
 repository: https://github.com/ngine-io/ansible-collection-hashi
 documentation: https://ngine-io.github.io/ansible-collection-hashi/
 homepage: https://ngine-io.github.io/ansible-collection-hashi/

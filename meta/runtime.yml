@@ -1,2 +1,4 @@
-# ansible.builtin FQCN, used throughout the roles, needs 2.10 or newer.
-requires_ansible: ">=2.10"
+---
+# Oldest ansible-core release still supported upstream. The roles use the
+# ansible.builtin FQCN and loop, neither of which works before 2.10 anyway.
+requires_ansible: ">=2.15.0"
