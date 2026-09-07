@@ -39,6 +39,95 @@ consul__recursors: []
 # - "1.1.1.1"
 # - "1.0.0.1"
 
+# Addresses the API and DNS endpoints bind to. Null falls back to
+# consul__client_addresses.
+consul__address_dns: null
+consul__address_http: null
+consul__address_https: null
+consul__address_grpc: null
+consul__address_grpc_tls: null
+
+consul__advertise_address_wan: null
+consul__translate_wan_addrs: false
+
+# WAN federation
+consul__primary_datacenter: null
+consul__retry_join_wan: []
+consul__retry_interval_wan: null
+consul__retry_max_wan: null
+
+# LAN join. Defaults to the inventory derived server list.
+consul__retry_join: "{{ consul__servers }}"
+consul__retry_interval: null
+consul__retry_max: null
+
+consul__alt_domain: null
+consul__node_meta: {}
+
+# Logging
+consul__log_json: false
+consul__log_file: null
+consul__log_rotate_bytes: null
+consul__log_rotate_duration: null
+consul__log_rotate_max_files: null
+consul__enable_syslog: false
+consul__syslog_facility: null
+
+# Agent behaviour
+consul__enable_debug: false
+consul__disable_update_check: true
+consul__disable_anonymous_signature: true
+consul__disable_host_node_id: false
+# Leaving on terminate is right for clients, wrong for servers: a server that
+# leaves gracefully is removed from the Raft peer set on every restart.
+consul__leave_on_terminate: "{{ consul__role != 'server' }}"
+consul__skip_leave_on_interrupt: "{{ consul__role == 'server' }}"
+consul__rejoin_after_leave: false
+consul__check_update_interval: null
+consul__session_ttl_min: null
+# Script checks let anyone with API write run commands on the agent host.
+# Local only means checks must come from the agent's own config.
+consul__enable_script_checks: false
+consul__enable_local_script_checks: false
+
+# DNS, see https://developer.hashicorp.com/consul/docs/agent/config/config-files#dns_config
+consul__dns_allow_stale: true
+consul__dns_max_stale: null
+consul__dns_node_ttl: null
+consul__dns_service_ttl: {}
+consul__dns_enable_truncate: false
+consul__dns_only_passing: false
+consul__dns_udp_answer_limit: null
+consul__dns_a_record_limit: null
+consul__dns_recursor_strategy: null
+consul__dns_use_cache: false
+consul__dns_cache_max_age: null
+
+# Performance, see
+# https://developer.hashicorp.com/consul/docs/agent/config/config-files#performance
+# raft_multiplier 1 is the tight setting, 5 the relaxed one for cloud
+# networks. Consul's own default is 5.
+consul__performance_raft_multiplier: null
+consul__performance_leave_drain_time: null
+consul__performance_rpc_hold_timeout: null
+
+# Limits
+consul__limits_http_max_conns_per_client: null
+consul__limits_https_handshake_timeout: null
+consul__limits_rpc_handshake_timeout: null
+consul__limits_rpc_max_conns_per_client: null
+consul__limits_rpc_rate: null
+consul__limits_rpc_max_burst: null
+consul__limits_kv_max_value_size: null
+consul__limits_txn_max_req_len: null
+
+# UI, see
+# https://developer.hashicorp.com/consul/docs/agent/config/config-files#ui_config
+consul__ui_content_path: null
+consul__ui_metrics_provider: null
+consul__ui_metrics_proxy_base_url: null
+consul__ui_dashboard_url_templates: {}
+
 consul__ui: true
 consul__connect_enabled: false
 consul__group_name: consul

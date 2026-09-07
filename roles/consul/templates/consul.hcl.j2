@@ -1,10 +1,16 @@
 # {{ ansible_managed }}
-# Full configuration options can be found at https://www.consul.io/docs/agent/options.html
+# https://developer.hashicorp.com/consul/docs/agent/config/config-files
 
 datacenter = "{{ consul__datacenter }}"
+{% if consul__primary_datacenter is not none %}
+primary_datacenter = "{{ consul__primary_datacenter }}"
+{% endif %}
 data_dir = "{{ consul__data_dir }}"
-client_addr = "{{ ' '.join(consul__client_addresses) }}"
-ui = {{ consul__ui | bool | to_json }}
+domain = "{{ consul__domain }}"
+{% if consul__alt_domain is not none %}
+alt_domain = "{{ consul__alt_domain }}"
+{% endif %}
+node_name = "{{ consul__node_name }}"
 server = {{ (consul__role == 'server') | bool | to_json }}
 
 {% if consul__role == 'server' %}
@@ -15,12 +21,38 @@ bootstrap_expect = {{ consul__servers | count }}
 encrypt = "{{ consul__encrypt }}"
 {% endif %}
 
-retry_join = {{ consul__servers | to_json }}
-log_level = "{{ consul__log_level }}"
-node_name = "{{ consul__node_name }}"
 bind_addr = "{{ consul__bind_address }}"
 advertise_addr = "{{ consul__advertise_address }}"
+{% if consul__advertise_address_wan is not none %}
+advertise_addr_wan = "{{ consul__advertise_address_wan }}"
+{% endif %}
+translate_wan_addrs = {{ consul__translate_wan_addrs | bool | to_json }}
+client_addr = "{{ ' '.join(consul__client_addresses) }}"
 
+{% if consul__address_dns is not none
+   or consul__address_http is not none
+   or consul__address_https is not none
+   or consul__address_grpc is not none
+   or consul__address_grpc_tls is not none %}
+addresses {
+{% if consul__address_dns is not none %}
+  dns = "{{ consul__address_dns }}"
+{% endif %}
+{% if consul__address_http is not none %}
+  http = "{{ consul__address_http }}"
+{% endif %}
+{% if consul__address_https is not none %}
+  https = "{{ consul__address_https }}"
+{% endif %}
+{% if consul__address_grpc is not none %}
+  grpc = "{{ consul__address_grpc }}"
+{% endif %}
+{% if consul__address_grpc_tls is not none %}
+  grpc_tls = "{{ consul__address_grpc_tls }}"
+{% endif %}
+}
+
+{% endif %}
 ports {
   grpc = {{ consul__port_grpc }}
   dns = {{ consul__port_dns }}
@@ -35,13 +67,180 @@ ports {
   expose_max_port = {{ consul__port_expose_max }}
 }
 
-connect {
-  enabled = {{ consul__connect_enabled | bool | to_json }}
+retry_join = {{ consul__retry_join | to_json }}
+{% if consul__retry_interval is not none %}
+retry_interval = "{{ consul__retry_interval }}"
+{% endif %}
+{% if consul__retry_max is not none %}
+retry_max = {{ consul__retry_max | int }}
+{% endif %}
+{% if consul__retry_join_wan %}
+retry_join_wan = {{ consul__retry_join_wan | to_json }}
+{% endif %}
+{% if consul__retry_interval_wan is not none %}
+retry_interval_wan = "{{ consul__retry_interval_wan }}"
+{% endif %}
+{% if consul__retry_max_wan is not none %}
+retry_max_wan = {{ consul__retry_max_wan | int }}
+{% endif %}
+
+leave_on_terminate = {{ consul__leave_on_terminate | bool | to_json }}
+skip_leave_on_interrupt = {{ consul__skip_leave_on_interrupt | bool | to_json }}
+rejoin_after_leave = {{ consul__rejoin_after_leave | bool | to_json }}
+
+log_level = "{{ consul__log_level }}"
+log_json = {{ consul__log_json | bool | to_json }}
+{% if consul__log_file is not none %}
+log_file = "{{ consul__log_file }}"
+{% endif %}
+{% if consul__log_rotate_bytes is not none %}
+log_rotate_bytes = {{ consul__log_rotate_bytes | int }}
+{% endif %}
+{% if consul__log_rotate_duration is not none %}
+log_rotate_duration = "{{ consul__log_rotate_duration }}"
+{% endif %}
+{% if consul__log_rotate_max_files is not none %}
+log_rotate_max_files = {{ consul__log_rotate_max_files | int }}
+{% endif %}
+enable_syslog = {{ consul__enable_syslog | bool | to_json }}
+{% if consul__syslog_facility is not none %}
+syslog_facility = "{{ consul__syslog_facility }}"
+{% endif %}
+
+enable_debug = {{ consul__enable_debug | bool | to_json }}
+disable_update_check = {{ consul__disable_update_check | bool | to_json }}
+disable_anonymous_signature = {{ consul__disable_anonymous_signature | bool | to_json }}
+disable_host_node_id = {{ consul__disable_host_node_id | bool | to_json }}
+enable_script_checks = {{ consul__enable_script_checks | bool | to_json }}
+enable_local_script_checks = {{ consul__enable_local_script_checks | bool | to_json }}
+{% if consul__check_update_interval is not none %}
+check_update_interval = "{{ consul__check_update_interval }}"
+{% endif %}
+{% if consul__session_ttl_min is not none %}
+session_ttl_min = "{{ consul__session_ttl_min }}"
+{% endif %}
+
+{% if consul__node_meta %}
+node_meta {
+{% for key, value in consul__node_meta.items() %}
+  {{ key | to_json }} = {{ value | to_json }}
+{% endfor %}
 }
 
+{% endif %}
 {% if consul__recursors %}
 recursors = {{ consul__recursors | to_json }}
 {% endif %}
+
+dns_config {
+  allow_stale = {{ consul__dns_allow_stale | bool | to_json }}
+{% if consul__dns_max_stale is not none %}
+  max_stale = "{{ consul__dns_max_stale }}"
+{% endif %}
+{% if consul__dns_node_ttl is not none %}
+  node_ttl = "{{ consul__dns_node_ttl }}"
+{% endif %}
+{% if consul__dns_service_ttl %}
+  service_ttl {
+{% for key, value in consul__dns_service_ttl.items() %}
+    {{ key | to_json }} = "{{ value }}"
+{% endfor %}
+  }
+{% endif %}
+  enable_truncate = {{ consul__dns_enable_truncate | bool | to_json }}
+  only_passing = {{ consul__dns_only_passing | bool | to_json }}
+{% if consul__dns_udp_answer_limit is not none %}
+  udp_answer_limit = {{ consul__dns_udp_answer_limit | int }}
+{% endif %}
+{% if consul__dns_a_record_limit is not none %}
+  a_record_limit = {{ consul__dns_a_record_limit | int }}
+{% endif %}
+{% if consul__dns_recursor_strategy is not none %}
+  recursor_strategy = "{{ consul__dns_recursor_strategy }}"
+{% endif %}
+  use_cache = {{ consul__dns_use_cache | bool | to_json }}
+{% if consul__dns_cache_max_age is not none %}
+  cache_max_age = "{{ consul__dns_cache_max_age }}"
+{% endif %}
+}
+
+{% if consul__performance_raft_multiplier is not none
+   or consul__performance_leave_drain_time is not none
+   or consul__performance_rpc_hold_timeout is not none %}
+performance {
+{% if consul__performance_raft_multiplier is not none %}
+  raft_multiplier = {{ consul__performance_raft_multiplier | int }}
+{% endif %}
+{% if consul__performance_leave_drain_time is not none %}
+  leave_drain_time = "{{ consul__performance_leave_drain_time }}"
+{% endif %}
+{% if consul__performance_rpc_hold_timeout is not none %}
+  rpc_hold_timeout = "{{ consul__performance_rpc_hold_timeout }}"
+{% endif %}
+}
+
+{% endif %}
+{% if consul__limits_http_max_conns_per_client is not none
+   or consul__limits_https_handshake_timeout is not none
+   or consul__limits_rpc_handshake_timeout is not none
+   or consul__limits_rpc_max_conns_per_client is not none
+   or consul__limits_rpc_rate is not none
+   or consul__limits_rpc_max_burst is not none
+   or consul__limits_kv_max_value_size is not none
+   or consul__limits_txn_max_req_len is not none %}
+limits {
+{% if consul__limits_http_max_conns_per_client is not none %}
+  http_max_conns_per_client = {{ consul__limits_http_max_conns_per_client | int }}
+{% endif %}
+{% if consul__limits_https_handshake_timeout is not none %}
+  https_handshake_timeout = "{{ consul__limits_https_handshake_timeout }}"
+{% endif %}
+{% if consul__limits_rpc_handshake_timeout is not none %}
+  rpc_handshake_timeout = "{{ consul__limits_rpc_handshake_timeout }}"
+{% endif %}
+{% if consul__limits_rpc_max_conns_per_client is not none %}
+  rpc_max_conns_per_client = {{ consul__limits_rpc_max_conns_per_client | int }}
+{% endif %}
+{% if consul__limits_rpc_rate is not none %}
+  rpc_rate = {{ consul__limits_rpc_rate }}
+{% endif %}
+{% if consul__limits_rpc_max_burst is not none %}
+  rpc_max_burst = {{ consul__limits_rpc_max_burst | int }}
+{% endif %}
+{% if consul__limits_kv_max_value_size is not none %}
+  kv_max_value_size = {{ consul__limits_kv_max_value_size | int }}
+{% endif %}
+{% if consul__limits_txn_max_req_len is not none %}
+  txn_max_req_len = {{ consul__limits_txn_max_req_len | int }}
+{% endif %}
+}
+
+{% endif %}
+ui_config {
+  enabled = {{ consul__ui | bool | to_json }}
+{% if consul__ui_content_path is not none %}
+  content_path = "{{ consul__ui_content_path }}"
+{% endif %}
+{% if consul__ui_metrics_provider is not none %}
+  metrics_provider = "{{ consul__ui_metrics_provider }}"
+{% endif %}
+{% if consul__ui_metrics_proxy_base_url is not none %}
+  metrics_proxy {
+    base_url = "{{ consul__ui_metrics_proxy_base_url }}"
+  }
+{% endif %}
+{% if consul__ui_dashboard_url_templates %}
+  dashboard_url_templates {
+{% for key, value in consul__ui_dashboard_url_templates.items() %}
+    {{ key | to_json }} = {{ value | to_json }}
+{% endfor %}
+  }
+{% endif %}
+}
+
+connect {
+  enabled = {{ consul__connect_enabled | bool | to_json }}
+}
 
 telemetry {
   prometheus_retention_time = "{{ consul__prometheus_retention_time }}"
