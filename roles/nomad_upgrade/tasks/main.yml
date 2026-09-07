@@ -19,7 +19,7 @@
   until: eligibility_node.rc == 0
   retries: 5
   delay: 10
-  change_when: false
+  changed_when: false
 
 - name: Process package updates
   when: updates_available is changed

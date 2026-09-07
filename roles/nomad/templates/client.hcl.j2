@@ -13,7 +13,7 @@ client {
 
 {% if nomad__client_meta %}
   meta {
-{% for key, value in nomad__client_meta %}
+{% for key, value in nomad__client_meta.items() %}
     {{ key }} = {{ value | to_json }}
 {% endfor %}
   }
@@ -64,7 +64,7 @@ plugin "docker" {
 {% block nomad__client_plugin_raw_exec %}
 plugin "raw_exec" {
   config {
-    enabled = {{ nomad__client_plugin_raw_exec_enabled | to_json }}
+    enabled = {{ nomad__client_plugin_raw_exec_enabled | bool | to_json }}
   }
 }
 {% endblock %}
