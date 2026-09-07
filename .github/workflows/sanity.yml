@@ -12,27 +12,65 @@ jobs:
       run:
         working-directory: ansible_collections/ngine_io/hashi
     strategy:
+      fail-fast: false
       matrix:
         ansible:
-          - stable-2.12
-          - stable-2.11
-          - stable-2.10
-          - stable-2.9
+          - stable-2.16
+          - stable-2.17
+          - stable-2.18
           - devel
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           path: ansible_collections/ngine_io/hashi
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Install ansible-base (${{ matrix.ansible }})
+      - name: Install ansible-core (${{ matrix.ansible }})
         run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
 
       - name: Run sanity tests
         run: ansible-test sanity --docker -v --color
+
+  templates:
+    name: Templates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install jinja2 pyyaml python-hcl2 --disable-pip-version-check
+
+      # The collection is almost entirely Jinja, and ansible-test does not
+      # look at templates at all.
+      - name: Render every template and parse the result as HCL
+        run: python3 tests/render_templates.py
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install ansible-lint
+        run: pip install ansible-lint --disable-pip-version-check
+
+      - name: Run ansible-lint
+        run: ansible-lint

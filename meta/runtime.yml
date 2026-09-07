@@ -1,1 +1,2 @@
-requires_ansible: ">=2.9"
+# ansible.builtin FQCN, used throughout the roles, needs 2.10 or newer.
+requires_ansible: ">=2.10"

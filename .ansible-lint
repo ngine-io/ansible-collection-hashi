@@ -1,0 +1,9 @@
+---
+exclude_paths:
+  - .github/
+skip_list:
+  # The roles predate FQCN and renaming every module call is a change of its
+  # own; new tasks use FQCN.
+  - fqcn-builtins
+  # Task names are sentence case throughout the collection already.
+  - name[casing]
