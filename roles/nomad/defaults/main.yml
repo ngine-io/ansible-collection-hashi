@@ -1,5 +1,20 @@
 ---
 nomad__package: "nomad"
+# Pin to an exact package version, e.g. "1.8.4-1". Null tracks the repository.
+nomad__version: null
+# Additional packages the agent needs, e.g. git for the git artifact getter.
+nomad__extra_packages:
+  - git
+
+# Ownership and permissions of the rendered configuration. The config may hold
+# the gossip key and ACL tokens, so it is not world readable by default.
+nomad__config_owner: root
+nomad__config_group: root
+nomad__config_file_mode: "0640"
+nomad__config_dir_mode: "0700"
+
+# Run "nomad config validate" before any restart is triggered.
+nomad__config_validate: true
 nomad__node_name: "{{ inventory_hostname_short }}"
 nomad__log_level: INFO
 nomad__data_path: /opt/nomad/data

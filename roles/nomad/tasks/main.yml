@@ -1,9 +1,7 @@
 ---
 - name: Install
   package:
-    name:
-      - "{{ nomad__package }}"
-      - git
+    name: "{{ [nomad__package_spec] + nomad__extra_packages }}"
   notify:
     - restart nomad
 
@@ -29,10 +27,21 @@
   # TODO: Improve check
   ignore_errors: true
 
+- name: Ensure config directory exists
+  file:
+    path: "{{ nomad__config_path }}"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_dir_mode }}"
+    state: directory
+
 - name: Configure base config
   template:
     src: nomad.hcl.j2
     dest: "{{ nomad__config_path }}/nomad.hcl"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_file_mode }}"
   notify:
     - restart nomad
 
@@ -40,6 +49,9 @@
   template:
     src: server.hcl.j2
     dest: "{{ nomad__config_path }}/server.hcl"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_file_mode }}"
   when: "'server' in nomad__roles"
   notify:
     - restart nomad
@@ -63,6 +75,9 @@
   template:
     src: client.hcl.j2
     dest: "{{ nomad__config_path }}/client.hcl"
+    owner: "{{ nomad__config_owner }}"
+    group: "{{ nomad__config_group }}"
+    mode: "{{ nomad__config_file_mode }}"
   when: "'client' in nomad__roles"
   notify:
     - restart nomad
@@ -74,6 +89,23 @@
   when: "'client' not in nomad__roles"
   notify:
     - restart nomad
+
+- name: Ensure data directory exists
+  file:
+    path: "{{ nomad__data_path }}"
+    owner: root
+    group: root
+    mode: 0700
+    state: directory
+
+# Runs before the handlers so a broken configuration fails the play instead of
+# restarting the agent into a crash loop.
+- name: Validate config
+  command: nomad config validate "{{ nomad__config_path }}"
+  changed_when: false
+  when:
+    - nomad__config_validate | bool
+    - not ansible_check_mode
 
 - name: Ensure service is running
   systemd:
