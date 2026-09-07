@@ -1,6 +1,31 @@
 ---
-nomad_job__nomad_addr: "https://127.0.0.1:4646"
+# Derived from the nomad role's variables when it ran on the same host, so
+# enabling TLS or moving the HTTP port does not need this to be set again.
+nomad_job__nomad_addr: "{{ 'https' if (nomad__tls_enabled | default(false) | bool) else 'http' }}://127.0.0.1:{{ nomad__port_http | default(4646) }}"
 nomad_job__nomad_namespace: "default"
+nomad_job__nomad_region: null
+
+# ACL token used for the job API. Secret, keep it in a vault file.
+nomad_job__nomad_token: null
+
+# Client side TLS, needed when the agent runs with verify_https_client.
+nomad_job__nomad_cacert: null
+nomad_job__nomad_client_cert: null
+nomad_job__nomad_client_key: null
+
+# Where rendered jobs are written before they are validated and run.
+nomad_job__tmp_path: /tmp
+
+# Variables handed to every job template, merged with the per job vars.
+nomad_job__vars: {}
+
+# Jobs to manage. "path" names a template under templates/nomad_jobs/ of the
+# calling playbook.
+#
+# nomad_job__job_templates:
+#   - name: traefik
+#     path: traefik.nomad
+#     vars:
+#       replicas: 3
+#     state: present
 nomad_job__job_templates: []
-#  - name:
-#    file:

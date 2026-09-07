@@ -2,38 +2,57 @@
 - name: Job block
   environment:
     NOMAD_ADDR: "{{ nomad_job__nomad_addr }}"
-    NOMAD_NAMESPACE: "{{ nomad_job__nomad_namespace }}"
+    NOMAD_NAMESPACE: "{{ item.namespace | default(nomad_job__nomad_namespace) }}"
+    NOMAD_REGION: "{{ nomad_job__nomad_region | default('', true) }}"
+    NOMAD_TOKEN: "{{ nomad_job__nomad_token | default('', true) }}"
+    NOMAD_CACERT: "{{ nomad_job__nomad_cacert | default('', true) }}"
+    NOMAD_CLIENT_CERT: "{{ nomad_job__nomad_client_cert | default('', true) }}"
+    NOMAD_CLIENT_KEY: "{{ nomad_job__nomad_client_key | default('', true) }}"
   block:
-  - name: Setup job
-    template:
-      src: "./nomad_jobs/{{ item.path }}.j2"
-      dest: /tmp/{{ item.path }}
-    register: job
-    check_mode: false
-    changed_when: false
+    - name: Stop job
+      command: >
+        nomad job stop {{ '-purge' if item.purge | default(false) | bool else '' }} {{ item.name }}
+      register: stop
+      changed_when: "'not found' not in stop.stderr"
+      failed_when:
+        - stop.rc != 0
+        - "'not found' not in stop.stderr"
+      when: item.state | default('present') == 'absent'
 
-  - name: Validate Job
-    command: >
-      nomad job validate /tmp/{{ item.path }}
-    register: plan
-    check_mode: false
-    changed_when: false
+    - name: Handle present job
+      when: item.state | default('present') != 'absent'
+      block:
+        - name: Setup job
+          template:
+            src: "./nomad_jobs/{{ item.path }}.j2"
+            dest: "{{ nomad_job__tmp_path }}/{{ item.path }}"
+            mode: 0600
+          vars:
+            job_vars: "{{ nomad_job__vars | combine(item.vars | default({})) }}"
+          check_mode: false
+          changed_when: false
 
-  - name: Plan Job
-    command: >
-      nomad job plan /tmp/{{ item.path }}
-    register: plan
-    changed_when: plan.rc|int == 1
-    failed_when: plan.rc|int > 1
-    check_mode: false
+        - name: Validate Job
+          command: >
+            nomad job validate {{ nomad_job__tmp_path }}/{{ item.path }}
+          check_mode: false
+          changed_when: false
 
-  - name: Show plan
-    debug:
-      var: plan.stdout_lines
-    changed_when: plan.rc|int == 1
+        - name: Plan Job
+          command: >
+            nomad job plan {{ nomad_job__tmp_path }}/{{ item.path }}
+          register: plan
+          changed_when: plan.rc | int == 1
+          failed_when: plan.rc | int > 1
+          check_mode: false
 
-  - name: Run Job
-    command: >
-      nomad job run /tmp/{{ item.path }}
-    register: run
-    when: plan is changed
+        - name: Show plan
+          debug:
+            var: plan.stdout_lines
+          changed_when: plan.rc | int == 1
+
+        - name: Run Job
+          command: >
+            nomad job run {{ nomad_job__tmp_path }}/{{ item.path }}
+          register: run
+          when: plan is changed
