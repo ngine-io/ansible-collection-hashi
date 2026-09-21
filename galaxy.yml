@@ -23,4 +23,9 @@ repository: https://github.com/ngine-io/ansible-collection-hashi
 documentation: https://ngine-io.github.io/ansible-collection-hashi/
 homepage: https://ngine-io.github.io/ansible-collection-hashi/
 issues: https://github.com/ngine-io/ansible-collection-hashi/issues
-build_ignore: []
+build_ignore:
+  # Agent tooling, not collection content: keep it out of the Galaxy artifact.
+  - .claude
+  - CLAUDE.md
+  - .ansible-lint
+  - .ansible-lint-ignore
