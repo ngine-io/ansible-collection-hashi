@@ -18,7 +18,7 @@ consul__role: server
 consul__node_name: "{{ inventory_hostname_short }}"
 consul__log_level: INFO
 consul__bind_address: "0.0.0.0"
-consul__advertise_address: "{{ ansible_default_ipv4.address }}"
+consul__advertise_address: "{{ ansible_facts.default_ipv4.address }}"
 consul__client_addresses:
   - "0.0.0.0"
 
@@ -222,7 +222,9 @@ consul__servers: |
   {% for host in groups[consul__group_name] %}
   {% set _consul_node_role = hostvars[host]['consul__role'] | default('server', true) %}
   {% if _consul_node_role == 'server' %}
-  {% if _consul__servers.append(hostvars[host]['consul__advertise_address'] | default(hostvars[host]['ansible_default_ipv4']['address'], true)) %}{% endif %}
+  {% set _consul_address = hostvars[host]['consul__advertise_address']
+       | default(hostvars[host]['ansible_facts']['default_ipv4']['address'], true) %}
+  {% if _consul__servers.append(_consul_address) %}{% endif %}
   {% endif %}
   {% endfor %}
   {{ _consul__servers }}

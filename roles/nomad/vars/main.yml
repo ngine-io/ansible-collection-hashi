@@ -3,4 +3,4 @@ nomad__config_path: /etc/nomad.d
 
 # Debian separates name and version with "=", RedHat with "-".
 nomad__package_spec: >-
-  {{ nomad__package }}{{ (('=' if ansible_os_family == 'Debian' else '-') ~ nomad__version) if nomad__version else '' }}
+  {{ nomad__package }}{{ (('=' if ansible_facts.os_family == 'Debian' else '-') ~ nomad__version) if nomad__version else '' }}

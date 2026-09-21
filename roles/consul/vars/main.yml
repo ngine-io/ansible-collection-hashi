@@ -3,4 +3,4 @@ consul__config_path: /etc/consul.d
 
 # Debian separates name and version with "=", RedHat with "-".
 consul__package_spec: >-
-  {{ consul__package }}{{ (('=' if ansible_os_family == 'Debian' else '-') ~ consul__version) if consul__version else '' }}
+  {{ consul__package }}{{ (('=' if ansible_facts.os_family == 'Debian' else '-') ~ consul__version) if consul__version else '' }}

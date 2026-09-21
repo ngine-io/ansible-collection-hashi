@@ -164,7 +164,7 @@
     owner: "{{ nomad__config_owner }}"
     group: "{{ nomad__config_group }}"
     mode: "{{ nomad__config_file_mode }}"
-  when: nomad__extra_config
+  when: nomad__extra_config | length > 0
   notify:
     - Restart nomad
 
@@ -172,7 +172,7 @@
   ansible.builtin.file:
     path: "{{ nomad__config_path }}/zz-extra.json"
     state: absent
-  when: not nomad__extra_config
+  when: nomad__extra_config | length == 0
   notify:
     - Restart nomad
 
