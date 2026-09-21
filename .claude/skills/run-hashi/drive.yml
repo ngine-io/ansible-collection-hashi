@@ -10,6 +10,7 @@
   vars:
     nomad_addr: http://127.0.0.1:4646
     consul_addr: http://127.0.0.1:8500
+    consul_port: 8500
   tasks:
     - name: Agent info
       ngine_io.hashi.nomad_agent_info:
@@ -126,6 +127,8 @@
             name: ngine_io.hashi.consul_service
           vars:
             consul_service__host: 127.0.0.1
+            # Must follow the driver's port offset, not the role default.
+            consul_service__port: "{{ consul_port }}"
             consul_service__services:
               - service_name: node-exporter
                 service_port: 9100

@@ -55,6 +55,22 @@ Everything the driver creates lives in `$HASHI_RUN_DIR` (default
 `setup` takes a few minutes the first time (pip + two binary downloads);
 afterwards it is fast. `all` is the one-shot entry point.
 
+### If the machine already runs Nomad or Consul
+
+`up` refuses to start, and `drive` refuses to run, against an agent this driver
+did not start — it checks that the agent's data dir is under `$HASHI_RUN_DIR`.
+That guard matters: `drive` drains nodes and purges jobs, which must never be
+aimed at somebody's real cluster just because it answered on 4646.
+
+To run alongside an existing agent, shift every port:
+
+```bash
+HASHI_PORT_OFFSET=10000 ./.claude/skills/run-hashi/driver.sh all
+```
+
+That puts Nomad on 14646/14647/14648 and Consul on 18500/18300/18301/18302/
+18502/18600. Verified on a host already running its own Nomad on 4646.
+
 ### What each step proves
 
 `check` runs the collection's own gates:
@@ -181,6 +197,14 @@ they need real systemd hosts — they will not run against this container.
   Harmless; the role renders it unconditionally.
 - **`changelogs/` is excluded from ansible-lint.** antsibull-changelog
   generates YAML whose indentation the production profile rejects.
+- **Consul reports its data dir under `DebugConfig`, not `Config`.**
+  `/v1/agent/self` on Consul puts `DataDir` in `DebugConfig`; Nomad puts it in
+  `config`. The ownership check has to look in both or it calls its own agent
+  foreign.
+- **Conditionals must evaluate to a boolean on ansible-core 2.19+.** A bare
+  dict or an `or` chain over lists fails with "Conditional result ... was
+  derived from value of type 'dict'". Use `| length > 0` rather than relying
+  on truthiness.
 
 ## Troubleshooting
 
@@ -192,6 +216,8 @@ they need real systemd hosts — they will not run against this container.
 | `py-consul required for this module` | Either py-consul is missing, or Ansible is using the system python. Pass `ansible_python_interpreter`. |
 | `type object 'Consul' has no attribute 'Agent'` | py-consul too new. `pip install 'py-consul==1.2.4'`. |
 | `curl: (7) Failed to connect to ... 4646` | The agent died on startup. `tail -30 /tmp/hashi-run/live/nomad.log`. |
+| `Refusing to continue: something on 127.0.0.1:4646 is a nomad agent that this driver did not start` | Working as intended. Stop that agent or use `HASHI_PORT_OFFSET`. |
+| `Could not connect to consul agent at 127.0.0.1:8500` during drive | A port offset is in use but something still points at the default. The driver passes `consul_port` to `drive.yml` for this. |
 | Nomad has no leader, `/v1/status/leader` is `""` | `bootstrap_expect` > number of servers. |
 | `down` says stopped but 4646 is still open | Fixed: `down` now falls back to matching agents by command line and escalates to SIGKILL. If you see this, something outside `$HASHI_RUN_DIR` is holding the port. |
 | `ansible-galaxy: unrecognized arguments: -q` | `ansible-galaxy` has no `-q`; use `--force`. |
