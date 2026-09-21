@@ -103,14 +103,14 @@
     owner: "{{ consul__config_owner }}"
     group: "{{ consul__config_group }}"
     mode: "{{ consul__config_file_mode }}"
-  when: consul__services or consul__checks or consul__watches
+  when: (consul__services | length + consul__checks | length + consul__watches | length) > 0
   notify: Restart consul
 
 - name: Remove services, checks and watches
   ansible.builtin.file:
     path: "{{ consul__config_path }}/zz-services.json"
     state: absent
-  when: not (consul__services or consul__checks or consul__watches)
+  when: (consul__services | length + consul__checks | length + consul__watches | length) == 0
   notify: Restart consul
 
 - name: Configure extra config
@@ -120,14 +120,14 @@
     owner: "{{ consul__config_owner }}"
     group: "{{ consul__config_group }}"
     mode: "{{ consul__config_file_mode }}"
-  when: consul__extra_config
+  when: consul__extra_config | length > 0
   notify: Restart consul
 
 - name: Remove extra config
   ansible.builtin.file:
     path: "{{ consul__config_path }}/zz-extra.json"
     state: absent
-  when: not consul__extra_config
+  when: consul__extra_config | length == 0
   notify: Restart consul
 
 - name: Configure extra config files

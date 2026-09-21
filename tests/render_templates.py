@@ -25,17 +25,21 @@ except ImportError:  # pragma: no cover - the HCL check is optional
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# The roles read facts through the ansible_facts namespace rather than the
+# injected ansible_* variables, so the harness has to mirror that shape.
 FACTS = {
     "ansible_managed": "Ansible managed",
-    "ansible_os_family": "Debian",
-    "ansible_distribution_release": "bookworm",
-    "ansible_architecture": "x86_64",
-    "ansible_default_ipv4": {"address": "10.0.0.10"},
+    "ansible_facts": {
+        "os_family": "Debian",
+        "distribution_release": "bookworm",
+        "architecture": "x86_64",
+        "default_ipv4": {"address": "10.0.0.10"},
+    },
     "inventory_hostname_short": "node1",
     "hashi_common__datacenter": "dc1",
     "groups": {"nomad_servers": ["s1", "s2", "s3"], "consul": ["s1", "s2", "s3"]},
     "hostvars": {
-        host: {"ansible_default_ipv4": {"address": "10.0.0.%d" % (index + 1)}}
+        host: {"ansible_facts": {"default_ipv4": {"address": "10.0.0.%d" % (index + 1)}}}
         for index, host in enumerate(["s1", "s2", "s3"])
     },
 }
