@@ -30,8 +30,18 @@ TREE="$RUN_DIR/ansible_collections/ngine_io/hashi"
 PY="$VENV/bin/python"
 SKILL="$ROOT/.claude/skills/run-hashi"
 
-NOMAD_HTTP=4646
-CONSUL_HTTP=8500
+# Every port is shifted by HASHI_PORT_OFFSET so the driver can run beside an
+# agent that already owns the default ports.
+PORT_OFFSET="${HASHI_PORT_OFFSET:-0}"
+NOMAD_HTTP=$((4646 + PORT_OFFSET))
+NOMAD_RPC=$((4647 + PORT_OFFSET))
+NOMAD_SERF=$((4648 + PORT_OFFSET))
+CONSUL_HTTP=$((8500 + PORT_OFFSET))
+CONSUL_DNS=$((8600 + PORT_OFFSET))
+CONSUL_GRPC=$((8502 + PORT_OFFSET))
+CONSUL_SERVER=$((8300 + PORT_OFFSET))
+CONSUL_SERF_LAN=$((8301 + PORT_OFFSET))
+CONSUL_SERF_WAN=$((8302 + PORT_OFFSET))
 
 log() { printf '\n=== %s ===\n' "$*"; }
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -134,6 +144,48 @@ cmd_validate() {
   done
 }
 
+# An agent is "ours" only if its data dir lives under our run dir. drive drains
+# nodes and purges jobs, so it must never be pointed at somebody else's
+# cluster just because it answered on the port.
+agent_is_ours() {
+  local kind="$1" port="$2" data
+  case "$kind" in
+    nomad) data=$(curl -sS --max-time 3 "http://127.0.0.1:$port/v1/agent/self" 2>/dev/null |
+      "$PY" -c 'import json,sys;print((json.load(sys.stdin).get("config") or {}).get("DataDir") or "")' 2>/dev/null) ;;
+    # Consul reports its data dir under DebugConfig, not Config.
+    consul) data=$(curl -sS --max-time 3 "http://127.0.0.1:$port/v1/agent/self" 2>/dev/null |
+      "$PY" -c 'import json,sys
+d = json.load(sys.stdin)
+print((d.get("DebugConfig") or {}).get("DataDir") or (d.get("Config") or {}).get("DataDir") or "")' 2>/dev/null) ;;
+  esac
+  case "$data" in
+    "$RUN_DIR"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+port_busy() {
+  curl -sSf --max-time 2 "http://127.0.0.1:$1/v1/status/leader" >/dev/null 2>&1
+}
+
+refuse_foreign() {
+  local kind="$1" port="$2"
+  if port_busy "$port" && ! agent_is_ours "$kind" "$port"; then
+    cat >&2 <<MSG
+
+Refusing to continue: something on 127.0.0.1:$port is a $kind agent that this
+driver did not start, so it belongs to someone else. drive drains nodes and
+purges jobs, which must never be aimed at a cluster it does not own.
+
+Either stop that agent, or run the driver on shifted ports:
+
+    HASHI_PORT_OFFSET=10000 $0 ${COMMAND:-all}
+
+MSG
+    exit 1
+  fi
+}
+
 wait_for() {
   local url="$1" what="$2" tries="${3:-40}"
   for _ in $(seq "$tries"); do
@@ -145,6 +197,8 @@ wait_for() {
 }
 
 cmd_up() {
+  refuse_foreign nomad "$NOMAD_HTTP"
+  refuse_foreign consul "$CONSUL_HTTP"
   cmd_down >/dev/null 2>&1 || true
   local live="$RUN_DIR/live"
   rm -rf "$live"
@@ -165,7 +219,11 @@ cmd_up() {
     'nomad__server_bootstrap_expect=1' \
     'nomad__server_retry_join=[]' \
     'nomad__servers=["127.0.0.1"]' \
-    'nomad__use_consul=true'
+    'nomad__use_consul=true' \
+    "nomad__port_http=$NOMAD_HTTP" \
+    "nomad__port_rpc=$NOMAD_RPC" \
+    "nomad__port_serf=$NOMAD_SERF" \
+    "nomad__consul_address=127.0.0.1:$CONSUL_HTTP"
 
   "$PY" "$SKILL/render_live.py" "$ROOT" "$live/consul" consul-server \
     "consul__data_dir=$live/consul-data" \
@@ -175,7 +233,13 @@ cmd_up() {
     'consul__bootstrap_expect=1' \
     'consul__retry_join=[]' \
     'consul__servers=["127.0.0.1"]' \
-    'consul__client_addresses=["127.0.0.1"]'
+    'consul__client_addresses=["127.0.0.1"]' \
+    "consul__port_http=$CONSUL_HTTP" \
+    "consul__port_dns=$CONSUL_DNS" \
+    "consul__port_grpc=$CONSUL_GRPC" \
+    "consul__port_server=$CONSUL_SERVER" \
+    "consul__port_serf_lan=$CONSUL_SERF_LAN" \
+    "consul__port_serf_wan=$CONSUL_SERF_WAN"
 
   log "starting consul"
   nohup "$(consul_bin)" agent -config-dir "$live/consul" >"$live/consul.log" 2>&1 &
@@ -196,10 +260,15 @@ cmd_up() {
 }
 
 cmd_drive() {
+  if ! agent_is_ours nomad "$NOMAD_HTTP"; then
+    echo "Refusing to drive: the agent on 127.0.0.1:$NOMAD_HTTP was not started by this driver." >&2
+    echo "Run '$0 up' first, or use HASHI_PORT_OFFSET to avoid an agent that already owns the port." >&2
+    exit 1
+  fi
   sync_tree
   local live="$RUN_DIR/live"
   local consul_enabled=false
-  curl -sSf --max-time 2 "http://127.0.0.1:$CONSUL_HTTP/v1/status/leader" >/dev/null 2>&1 && consul_enabled=true
+  agent_is_ours consul "$CONSUL_HTTP" && consul_enabled=true
 
   log "driving the modules and roles against the live agents"
   # ansible_python_interpreter has to point at the venv: with -c local Ansible
@@ -210,6 +279,7 @@ cmd_drive() {
     -e "ansible_python_interpreter=$PY" \
     -e "nomad_addr=http://127.0.0.1:$NOMAD_HTTP" \
     -e "consul_addr=http://127.0.0.1:$CONSUL_HTTP" \
+    -e "consul_port=$CONSUL_HTTP" \
     -e "consul_enabled=$consul_enabled" \
     --diff "$SKILL/drive.yml"
 
@@ -267,8 +337,12 @@ cmd_status() {
   log "status"
   for pair in "nomad $NOMAD_HTTP" "consul $CONSUL_HTTP"; do
     set -- $pair
-    if curl -sSf --max-time 2 "http://127.0.0.1:$2/v1/status/leader" >/dev/null 2>&1; then
-      printf '%-7s up   leader=%s\n' "$1" "$(curl -sS "http://127.0.0.1:$2/v1/status/leader")"
+    if port_busy "$2"; then
+      if agent_is_ours "$1" "$2"; then
+        printf '%-7s up   leader=%s\n' "$1" "$(curl -sS "http://127.0.0.1:$2/v1/status/leader")"
+      else
+        printf '%-7s FOREIGN agent on port %s, not started by this driver\n' "$1" "$2"
+      fi
     else
       printf '%-7s down\n' "$1"
     fi
@@ -283,6 +357,8 @@ except Exception:
 }
 
 cmd_all() {
+  # Without this a failing check or drive leaves the agents running.
+  trap 'cmd_down >/dev/null 2>&1 || true' EXIT
   cmd_setup
   cmd_check
   cmd_validate
@@ -291,7 +367,8 @@ cmd_all() {
   cmd_down
 }
 
-case "${1:-all}" in
+COMMAND="${1:-all}"
+case "$COMMAND" in
   setup) cmd_setup ;;
   check) cmd_check ;;
   validate) cmd_validate ;;
