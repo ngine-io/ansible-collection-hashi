@@ -26,5 +26,6 @@ issues: https://github.com/ngine-io/ansible-collection-hashi/issues
 build_ignore:
   # Agent tooling, not collection content: keep it out of the Galaxy artifact.
   - .claude
+  - CLAUDE.md
   - .ansible-lint
   - .ansible-lint-ignore
