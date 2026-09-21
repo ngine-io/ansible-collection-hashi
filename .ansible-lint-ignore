@@ -2,3 +2,4 @@
 # consul roles, not just by the common role, so they are namespaced for the
 # collection rather than for the role that declares them.
 roles/common/defaults/main.yml var-naming[no-role-prefix]
+.claude/*
