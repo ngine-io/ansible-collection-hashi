@@ -77,6 +77,10 @@ jobs:
       # to look at. This checks the playbooks the README documents, so the
       # documented usage cannot drift away from the roles.
       - name: Syntax check the example playbooks
+        # Unlike ansible-lint, ansible-playbook does not find the checkout's
+        # own collection by itself; keep the default path for the deps.
+        env:
+          ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}:~/.ansible/collections
         run: ansible-playbook -i tests/inventory --syntax-check tests/playbooks/*.yml
 
   templates:

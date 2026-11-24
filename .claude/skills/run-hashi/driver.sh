@@ -336,6 +336,7 @@ cmd_down() {
 cmd_status() {
   log "status"
   for pair in "nomad $NOMAD_HTTP" "consul $CONSUL_HTTP"; do
+    # shellcheck disable=SC2086  # splitting "name port" into $1 $2 is the point
     set -- $pair
     if port_busy "$2"; then
       if agent_is_ours "$1" "$2"; then
