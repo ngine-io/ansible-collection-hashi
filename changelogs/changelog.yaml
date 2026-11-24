@@ -15,3 +15,15 @@ releases:
       name: nomad_raft_info
       namespace: ''
     release_date: '2026-09-07'
+  1.9.0:
+    changes:
+      minor_changes:
+      - nomad, consul - ``nomad__extra_config``, ``consul__extra_config``, ``consul__services``,
+        ``consul__checks`` and ``consul__watches`` set to ``null`` (e.g. left empty
+        in inventory) are treated as empty.
+      - nomad, consul, common, cni, nomad_upgrade - read facts through the ``ansible_facts``
+        namespace instead of injected ``ansible_*`` variables, and use explicit boolean
+        conditionals as required by ansible-core 2.19+.
+    fragments:
+    - ansible-core-2.19-conditionals.yml
+    release_date: '2026-11-24'
