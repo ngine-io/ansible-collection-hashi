@@ -8,6 +8,11 @@
       "description": "Patch releases merge themselves once CI passes",
       "matchUpdateTypes": ["patch"],
       "automerge": true
+    },
+    {
+      "description": "Keep CI on Python 3.13, the newest ansible-core 2.19 supports",
+      "matchDepNames": ["python"],
+      "allowedVersions": "<3.14"
     }
   ]
 }
